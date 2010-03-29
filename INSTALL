@@ -1,0 +1,38 @@
+TO INSTALL:
+-----------
+First make sure that taglib and file (libmagic) are installed.
+If they are not, download them here:
+	- http://developer.kde.org/~wheeler/taglib/
+	- ftp://ftp.astron.com/pub/file/
+and then build and install them.
+
+Use "make" to build id3ted, and then install it by running "make install"
+with root priveleges.
+
+The default prefix for the installation is /usr/local. So id3ted is installed
+in /usr/local/bin. You can install it in any other directory by specifying
+your own prefix:
+    type "make PREFIX=/your/install/path install" as root
+
+Linux users should use the "Makefile.linux" instead of the default "Makefile".
+Mac OS X users should use the "Makefile.macosx".
+
+Please make sure that the CXXFLAGS variable contains -I entries for the
+include directories of taglib and file. The LDFLAGS variable has to contain
+-L entries for the lib directories of taglib and file.
+(see the gcc manpage for more details)
+
+After the installation you can type "id3ted --help" for getting information
+on how to use it.
+
+PREPROCESSOR VARIABLES:
+-----------------------
+The following preprocessor variables are used to control the build process of
+id3ted. You can define them by adding -D entries to the CXXFLAGS variable.
+(see the gcc manpage for more details)
+
+NO_STR_BASENAME: Use own implementation of the basename function.
+Required if your C string library does not contain it.
+
+DISABLE_UTF8: Prevent id3ted from using UTF-8 as the default encoding for
+filenames and id3 tags. Useful if your system did not support or use UTF-8.

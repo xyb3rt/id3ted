@@ -1,0 +1,25 @@
+all: id3ted
+
+CXX=g++
+PREFIX?=/usr/local
+# see INSTALL for available preprocessor variables
+CXXFLAGS+= -I$(PREFIX)/include/ -I$(PREFIX)/include/taglib -I/opt/local/include -I/opt/local/include/taglib -DNO_STR_BASENAME
+LDFLAGS+= -ltag -lmagic -L$(PREFIX)/lib -L/opt/local/lib
+
+CPPFILES=$(wildcard *.cpp)
+OBJFILES=$(CPPFILES:.cpp=.o)
+
+id3ted:	$(OBJFILES)
+	$(CXX) $(LDFLAGS) -pedantic -Wall -O3 -o $@ $^
+
+%.o: %.cpp Makefile
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+install: all
+	install -d -m 0755 id3ted $(PREFIX)/bin/id3ted
+
+clean:
+	rm -f id3ted *.o
+
+tags: *.h *.cpp
+	ctags $^
