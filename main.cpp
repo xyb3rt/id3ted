@@ -208,7 +208,7 @@ int main(int argc, char **argv) {
 	struct timeval *ptimes = NULL;     // -p
 	regex_t *fPathRegEx = NULL;        // -n|-N
 	g_fPathPMatch = NULL;              // -n|-N
-	unsigned int fPathNMatch;          // -n|-N
+	unsigned int fPathNMatch = 1;      // -n|-N
 	vector<GenericInfo*> genericMods;  // -a|-A|-t|-c|-g|-T|-y
 	vector<char*> framesToRemove;      // -r; option argument added to list
 	vector<FrameInfo*> framesToModify; // --FID
@@ -342,7 +342,6 @@ int main(int argc, char **argv) {
 				}
 
 				fPathRegEx = (regex_t*) s_malloc(sizeof(regex_t));
-				fPathNMatch = 1;
 				ostringstream regExPattern;
 				bool wcardPresent = false;
 

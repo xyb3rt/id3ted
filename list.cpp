@@ -216,7 +216,7 @@ void MP3File::showInfo() const {
 
 void printSizeHumanReadable(unsigned int size) {
 	float size_hr = size;
-	const char *unit;
+	const char *unit = NULL;
 
 	if (size_hr >= 1073741824) {
 		size_hr /= 1073741824;
