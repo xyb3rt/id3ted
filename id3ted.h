@@ -1,5 +1,5 @@
-/* id3ted: common.h
- * Copyright (c) 2009 Bert Muennich <muennich at informatik.hu-berlin.de>
+/* id3ted: id3ted.h
+ * Copyright (c) 2010 Bert Muennich <muennich at informatik.hu-berlin.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,31 +17,35 @@
  * USA.
  */
 
-#ifndef __COMMON_H__
-#define __COMMON_H__
+#ifndef __ID3TED_H__
+#define __ID3TED_H__
+
+#include <regex.h>
+#include <taglib/taglib.h>
 
 #define PROGNAME "id3ted"
-#define VERSION "0.7.1"
+#define VERSION  "0.7.1"
 
 #define FILE_BUF_SIZE 4096
 #define FIELD_DELIM ':'
 
 #ifdef DISABLE_UTF8
-#define USE_UNICODE false
+#define USE_UNICODE  false
 #define DEF_TSTR_ENC TagLib::String::Latin1
 #else
-#define USE_UNICODE true
+#define USE_UNICODE  true
 #define DEF_TSTR_ENC TagLib::String::UTF8
 #endif
-
-#include <regex.h>
-
-#include <taglib/taglib.h>
 
 using namespace std;
 using namespace TagLib;
 
-typedef enum ID3v2FrameID {
+extern const char *g_progname;
+extern char g_fdelim;
+extern int g_numFiles;
+extern regmatch_t *g_fPathPMatch;
+
+typedef enum _ID3v2FrameID {
 	FID3_XXXX,  // Unknown frame
   FID3_AENC,  // Audio encryption
   FID3_APIC,  // Attached picture
@@ -137,10 +141,5 @@ typedef enum ID3v2FrameID {
   FID3_WXXX,  // User defined URL link frame
 } ID3v2FrameID;
 
-extern const char *g_progname;
-extern char g_fdelim;
-extern int g_numFiles;
-extern regmatch_t *g_fPathPMatch;
-
-#endif /* __COMMON_H__ */
+#endif /* __ID3TED_H__ */
 

@@ -23,3 +23,6 @@ clean:
 
 tags: *.h *.cpp
 	ctags $^
+
+cscope: *.h *.cpp
+	cscope -b

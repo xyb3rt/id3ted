@@ -1,5 +1,5 @@
 /* id3ted: list.h
- * Copyright (c) 2009 Bert Muennich <muennich at informatik.hu-berlin.de>
+ * Copyright (c) 2010 Bert Muennich <muennich at informatik.hu-berlin.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@
 #ifndef __LIST_H__
 #define __LIST_H__
 
-#include "common.h"
+#include "id3ted.h"
 
 void printGenreList();
 void printSizeHumanReadable(unsigned int);

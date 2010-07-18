@@ -1,5 +1,5 @@
-/* id3ted: id3ted.cpp
- * Copyright (c) 2009 Bert Muennich <muennich at informatik.hu-berlin.de>
+/* id3ted: main.cpp
+ * Copyright (c) 2010 Bert Muennich <muennich at informatik.hu-berlin.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-#include "common.h"
+#include "id3ted.h"
 #include "frameinfo.h"
 #include "frametable.h"
 #include "list.h"
@@ -39,42 +39,51 @@
 #define st_mtim st_mtimespec
 #endif
 
-static int longOpt, optFrameID;
+enum opt_long_only {
+	OPT_LO_LIST_FRAMES = 128,
+	OPT_LO_LIST_GENRES,
+	OPT_LO_ORG_MOVE,
+};
+
+static int optFrameID;
 static const struct option long_options[] = {
-  // help and info
-  { "help",          no_argument, &longOpt, 'h' },
-  { "list-frames",   no_argument, &longOpt, 'f' },
-  { "list-genres",   no_argument, &longOpt, 'G' },
-  { "version",       no_argument, &longOpt, 'v' },
-  // list / remove / convert
-  { "info",          no_argument, &longOpt, 'i' },
-  { "list",          no_argument, &longOpt, 'l' },
-  { "list-wd",       no_argument, &longOpt, 'L' },
-	{ "lame-tag",      no_argument, &longOpt, 'e' },
-	{ "lame-tag-crc",  no_argument, &longOpt, 'E' },
-  { "strip-v1",      no_argument, &longOpt, 's' },
-  { "strip-v2",      no_argument, &longOpt, 'S' },
-  { "delete-all",    no_argument, &longOpt, 'D' },
-  { "id3v1-only",    no_argument, &longOpt, '1' },
-  { "id3v2-only",    no_argument, &longOpt, '2' },
-  { "write-all",     no_argument, &longOpt, '3' },
-  { "org-move",      no_argument, &longOpt, 'm' },
-  { "force",         no_argument, &longOpt, 'F' },
-  { "extract-apics", no_argument, &longOpt, 'x' },
-  { "delimiter",     required_argument, &longOpt, 'd' },
-	{ "file-pattern",  required_argument, &longOpt, 'n' },
-	{ "file-regex",    required_argument, &longOpt, 'N' },
-  { "organize",      required_argument, &longOpt, 'o' },
-  { "remove",        required_argument, &longOpt, 'r' },
-  // infomation to tag
-  { "artist",        required_argument, &longOpt, 'a' },
-  { "album",         required_argument, &longOpt, 'A' },
-  { "title",         required_argument, &longOpt, 't' },
-  { "comment",       required_argument, &longOpt, 'c' },
-  { "genre",         required_argument, &longOpt, 'g' },
-  { "track",         required_argument, &longOpt, 'T' },
-  { "year",          required_argument, &longOpt, 'y' },
-  // id3v2 frame ids for direct tagging
+  /* help, general info & others */
+  { "help",           no_argument,       NULL, 'h' },
+  { "version",        no_argument,       NULL, 'v' },
+  { "list-frames",    no_argument,       NULL, OPT_LO_LIST_FRAMES },
+  { "list-genres",    no_argument,       NULL, OPT_LO_LIST_GENRES },
+  { "preserve-times", no_argument,       NULL, 'p' },
+  { "delimiter",      required_argument, NULL, 'd' },
+  /* alter generic tag infomation */
+  { "artist",         required_argument, NULL, 'a' },
+  { "album",          required_argument, NULL, 'A' },
+  { "title",          required_argument, NULL, 't' },
+  { "comment",        required_argument, NULL, 'c' },
+  { "genre",          required_argument, NULL, 'g' },
+  { "track",          required_argument, NULL, 'T' },
+  { "year",           required_argument, NULL, 'y' },
+  /* get information from the files */
+  { "info",           no_argument,       NULL, 'i' },
+  { "list",           no_argument,       NULL, 'l' },
+  { "list-wd",        no_argument,       NULL, 'L' },
+  { "lame-tag",       no_argument,       NULL, 'm' },
+  { "lame-tag-crc",   no_argument,       NULL, 'M' },
+  /* Remove tags & specify which versions to write */
+  { "remove",         required_argument, NULL, 'r' },
+  { "delete-all",     no_argument,       NULL, 'D' },
+  { "strip-v1",       no_argument,       NULL, 's' },
+  { "strip-v2",       no_argument,       NULL, 'S' },
+  { "",               no_argument,       NULL, '1' },
+  { "",               no_argument,       NULL, '2' },
+  { "",               no_argument,       NULL, '3' },
+	/* Filename <-> tag information */
+  { "file-pattern",   required_argument, NULL, 'n' },
+  { "file-regex",     required_argument, NULL, 'N' },
+  { "organize",       required_argument, NULL, 'o' },
+  { "extract-apics",  no_argument,       NULL, 'x' },
+  { "force",          no_argument,       NULL, 'f' },
+  { "move",           no_argument,       NULL, OPT_LO_ORG_MOVE },
+  /* id3v2 frame ids for direct tagging */
 //{ "AENC", required_argument, &optFrameID, FID3_AENC },
   { "APIC", required_argument, &optFrameID, FID3_APIC },
 //{ "ASPI", required_argument, &optFrameID, FID3_ASPI },
@@ -184,25 +193,25 @@ regmatch_t *g_fPathPMatch;
  *   8: at least one error occured during processing of files
  */
 int main(int argc, char **argv) {
-	int updFlag = 0;                        // -1|-2|-3
-	int tagsToStrip = 0;                    // -s|-S|-D
-	bool haveToWriteFile = false;           // -1|-2|-3|-s|-S|-D|-a|-A|-t|-c|-g|-T|-y
-	bool haveToExtractAPICs = false;        // -x
-	bool haveToListTags = false;            // -l|-L
-	bool haveToPrintLameTag = false;        // -e|-E
-	bool checkLameCRC = false;              // -E
-	bool listV2WithDesc = false;            // -L
-	bool haveToShowInfo = false;            // -i
-	bool forceOverwrite = false;            // -F
-	bool orgMove = false;                   // -m
-	const char *orgPattern = NULL;          // -o; set to option argument
-	struct timeval *ptimes = NULL;          // -p
-	regex_t *fPathRegEx = NULL;             // -n|-N
-	g_fPathPMatch = NULL;                   // -n|-N
-	unsigned int fPathNMatch;               // -n|-N
-	std::vector<GenericInfo*> genericMods;  // -a|-A|-t|-c|-g|-T|-y
-	std::vector<char*> framesToRemove;      // -r; option argument added to list
-	std::vector<FrameInfo*> framesToModify; // --FID
+	int updFlag = 0;                   // -1|-2|-3
+	int tagsToStrip = 0;               // -s|-S|-D
+	bool writeFile = false;            // -1|-2|-3|-s|-S|-D|-a|-A|-t|-c|-g|-T|-y
+	bool extractAPICs = false;         // -x
+	bool listTags = false;             // -l|-L
+	bool printLameTag = false;         // -e|-E
+	bool checkLameCRC = false;         // -E
+	bool listV2WithDesc = false;       // -L
+	bool showInfo = false;             // -i
+	bool forceOverwrite = false;       // -F
+	bool orgMove = false;              // -m
+	const char *orgPattern = NULL;     // -o; set to option argument
+	struct timeval *ptimes = NULL;     // -p
+	regex_t *fPathRegEx = NULL;        // -n|-N
+	g_fPathPMatch = NULL;              // -n|-N
+	unsigned int fPathNMatch;          // -n|-N
+	vector<GenericInfo*> genericMods;  // -a|-A|-t|-c|-g|-T|-y
+	vector<char*> framesToRemove;      // -r; option argument added to list
+	vector<FrameInfo*> framesToModify; // --FID
 
 	int retCode = 0;
 	std::list<std::string> multOptWarning;
@@ -210,173 +219,41 @@ int main(int argc, char **argv) {
 	g_progname = basename(argv[0]);
 	if (strcmp(g_progname, ".") == 0) g_progname = PROGNAME;
 
-	// parsing command line options
+	/* parsing command line options */
 	int opt;
 	int error = 0, excVersion;
 
 	while (!error) {
 		excVersion = 0;
-		longOpt = 0;
 		optFrameID = FID3_XXXX;
 
-		opt = getopt_long(argc, argv, "hfGvilLeEsSD123mFpxd:n:N:o:r:a:A:t:c:g:y:T:", long_options, NULL);
+		opt = getopt_long(argc, argv, "hvpd:a:A:t:c:g:T:y:ilLmMr:DsS123n:N:o:xf", long_options, NULL);
 
-		if (opt == -1) {
+		if (opt == -1)
 			break;
-		} else if (opt == 0) {
-			opt = longOpt;
-		}
 
 		switch (opt) {
-			case 0: {
-				// --FID long options
-				const char *textFID = FrameTable::textFrameID((ID3v2FrameID) optFrameID);
-				ID3v2FrameID fid = (ID3v2FrameID) optFrameID;
-				FrameInfo *newFI = NULL;
-				bool excID3v2Frame = false;
-
-				switch(fid) {
-					case FID3_XXXX: {
-						break;
-					}
-					case FID3_APIC: {
-						APICFrameInfo *apicFI = new APICFrameInfo(textFID, fid, optarg);
-
-						if (!apicFI->readFile()) {
-							delete apicFI;
-						} else {
-							newFI = apicFI;
-						}
-
-						break;
-					}
-					case FID3_TXXX:
-					case FID3_WXXX: {
-						TDFrameInfo *tdFI = new TDFrameInfo(textFID, fid, optarg);
-
-						if (fid == FID3_TXXX && !tdFI->multipleFields()) {
-							cerr << g_progname << ": missing description field in --TXXX option argument" << endl;
-							error = 2;
-							
-							delete tdFI;
-						} else {
-							newFI = tdFI;
-						}
-
-						break;
-					}
-					case FID3_USLT:
-					case FID3_COMM: {
-						newFI = new TDLFrameInfo(textFID, fid, optarg);
-						break;
-					}
-					default: {
-						newFI = new FrameInfo(textFID, fid, optarg);
-						excID3v2Frame = true;
-						break;
-					}
-				}
-			
-				if (newFI != NULL) {
-					if (excID3v2Frame && newFI->sameFIDIn(framesToModify)) {
-						multOptWarning.push_back(textFID);
-						delete newFI;
-					} else {
-						framesToModify.push_back(newFI);
-						haveToWriteFile = true;
-					}
-				}
-
-				break;
-			}
+			/* invalid option given */
 			case '?':
-			case ':': {
 				error = 2;
 				break;
-			}
-			case 'h': {
+			/* help, general info & others */
+			case 'h':
 				printUsage();
 				exit(0);
-			}
-			case 'f': {
-				FrameTable::printFrameHelp();
-				exit(0);
-			}
-			case 'G': {
-				printGenreList();
-				exit(0);
-			}
-			case 'v': {
+			case 'v':
 				printVersion();
 				exit(0);
-			}
-			case 'i': {
-				haveToShowInfo = true;
-				break;
-			}
-			case 'L': {
-				listV2WithDesc = true;
-			}
-			case 'l': {
-				haveToListTags = true;
-				break;
-			}
-			case 'E': {
-				checkLameCRC = true;
-			}
-			case 'e': {
-				haveToPrintLameTag = true;
-				break;
-			}
-			case 's': {
-				tagsToStrip |= 1;
-				haveToWriteFile = true;
-				break;
-			}
-			case 'S': {
-				tagsToStrip |= 2;
-				haveToWriteFile = true;
-				break;
-			}
-			case 'D': {
-				tagsToStrip = 3;
-				haveToWriteFile = true;
-				break;
-			}
-			case '1': {
-				excVersion = 1;
-			}
-			case '2': {
-				if (excVersion == 0) excVersion = 2;
-			}
-			case '3': {
-				if (excVersion == 0) excVersion = 3;
-				if (!updFlag) {
-					updFlag = excVersion;
-					haveToWriteFile = true;
-				} else if (updFlag != excVersion) {
-					cerr << g_progname << ": conflicting options: -" << updFlag << ", -" << excVersion << endl;
-					error = 2;
-				}
-				break;
-			}
-			case 'm': {
-				orgMove = true;
-				break;
-			}
-			case 'F': {
-				forceOverwrite = true;
-				break;
-			}
-			case 'p': {
+			case OPT_LO_LIST_FRAMES:
+				FrameTable::printFrameHelp();
+				exit(0);
+			case OPT_LO_LIST_GENRES:
+				printGenreList();
+				exit(0);
+			case 'p':
 				ptimes = (struct timeval*) s_malloc(2 * sizeof(struct timeval));
 				break;
-			}
-			case 'x': {
-				haveToExtractAPICs = true;
-				break;
-			}
-			case 'd': {
+			case 'd':
 				if (strlen(optarg) == 1) {
 					g_fdelim = optarg[0];
 				} else {
@@ -384,25 +261,79 @@ int main(int argc, char **argv) {
 					error = 2;
 				}
 				break;
+			/* generic tag infomation */
+			case 'a':
+			case 'A':
+			case 't':
+			case 'c':
+			case 'g':
+			case 'T':
+			case 'y': {
+				GenericInfo *newGI = new GenericInfo((char) opt, optarg);
+
+				if (newGI != NULL) {
+					if (!newGI->sameIDIn(genericMods)) {
+						genericMods.push_back(newGI);
+						writeFile = true;
+					} else {
+						multOptWarning.push_back(std::string(1, opt));
+						delete newGI;
+					}
+				}
+
+				break;
 			}
-			case 'r': {
+			/* information from the files */
+			case 'i':
+				showInfo = true;
+				break;
+			case 'L':
+				listV2WithDesc = true;
+			case 'l':
+				listTags = true;
+				break;
+			case 'M':
+				checkLameCRC = true;
+			case 'm':
+				printLameTag = true;
+				break;
+			/* tag removal & version to write */
+			case 'r':
 				if (FrameTable::frameID(optarg) != FID3_XXXX) {
 					framesToRemove.push_back(optarg);
-					haveToWriteFile = true;
+					writeFile = true;
 				} else {
 					cerr << g_progname << ": -r: invalid id3v2 frame id: " << optarg << endl;
 					error = 2;
 				}
 				break;
-			}
-			case 'o': {
-				if (orgPattern == NULL) {
-					orgPattern = optarg;
-				} else if (strcmp(orgPattern, optarg) != 0) {
-					multOptWarning.push_back("o");
+			case 'D':
+				tagsToStrip = 3;
+				writeFile = true;
+				break;
+			case 's':
+				tagsToStrip |= 1;
+				writeFile = true;
+				break;
+			case 'S':
+				tagsToStrip |= 2;
+				writeFile = true;
+				break;
+			case '1':
+				excVersion = 1;
+			case '2':
+				if (excVersion == 0) excVersion = 2;
+			case '3':
+				if (excVersion == 0) excVersion = 3;
+				if (!updFlag) {
+					updFlag = excVersion;
+					writeFile = true;
+				} else if (updFlag != excVersion) {
+					cerr << g_progname << ": conflicting options: -" << updFlag << ", -" << excVersion << endl;
+					error = 2;
 				}
 				break;
-			}
+			/* filename <-> tag information */
 			case 'N':
 			case 'n': {
 				if (fPathRegEx != NULL) {
@@ -502,7 +433,7 @@ int main(int argc, char **argv) {
 							delete newFI;
 						} else {
 							framesToModify.push_back(newFI);
-							haveToWriteFile = true;
+							writeFile = true;
 						}
 
 						i++;
@@ -544,29 +475,90 @@ int main(int argc, char **argv) {
 
 				break;
 			}
-			case 'a':
-			case 'A':
-			case 't':
-			case 'c':
-			case 'g':
-			case 'T':
-			case 'y': {
-				GenericInfo *newGI = new GenericInfo((char) opt, optarg);
+			case 'o':
+				if (orgPattern == NULL) {
+					orgPattern = optarg;
+				} else if (strcmp(orgPattern, optarg) != 0) {
+					multOptWarning.push_back("o");
+				}
+				break;
+			case 'x':
+				extractAPICs = true;
+				break;
+			case 'f':
+				forceOverwrite = true;
+				break;
+			case OPT_LO_ORG_MOVE:
+				orgMove = true;
+				break;
+			/* id3v2 frame id long options */
+			case 0: {
+				// --FID long options
+				const char *textFID = FrameTable::textFrameID((ID3v2FrameID) optFrameID);
+				ID3v2FrameID fid = (ID3v2FrameID) optFrameID;
+				FrameInfo *newFI = NULL;
+				bool excID3v2Frame = false;
 
-				if (newGI != NULL) {
-					if (!newGI->sameIDIn(genericMods)) {
-						genericMods.push_back(newGI);
-						haveToWriteFile = true;
+				switch(fid) {
+					case FID3_XXXX: {
+						break;
+					}
+					case FID3_APIC: {
+						APICFrameInfo *apicFI = new APICFrameInfo(textFID, fid, optarg);
+
+						if (!apicFI->readFile()) {
+							delete apicFI;
+						} else {
+							newFI = apicFI;
+						}
+
+						break;
+					}
+					case FID3_TXXX:
+					case FID3_WXXX: {
+						TDFrameInfo *tdFI = new TDFrameInfo(textFID, fid, optarg);
+
+						if (fid == FID3_TXXX && !tdFI->multipleFields()) {
+							cerr << g_progname << ": missing description field in --TXXX option argument" << endl;
+							error = 2;
+							
+							delete tdFI;
+						} else {
+							newFI = tdFI;
+						}
+
+						break;
+					}
+					case FID3_USLT:
+					case FID3_COMM: {
+						newFI = new TDLFrameInfo(textFID, fid, optarg);
+						break;
+					}
+					default: {
+						newFI = new FrameInfo(textFID, fid, optarg);
+						excID3v2Frame = true;
+						break;
+					}
+				}
+			
+				if (newFI != NULL) {
+					if (excID3v2Frame && newFI->sameFIDIn(framesToModify)) {
+						multOptWarning.push_back(textFID);
+						delete newFI;
 					} else {
-						multOptWarning.push_back(std::string(1, opt));
-						delete newGI;
+						framesToModify.push_back(newFI);
+						writeFile = true;
 					}
 				}
 
 				break;
 			}
 		}
+	}
 
+	g_numFiles = argc - optind;
+
+	if (!error) {
 		// check if given options are in conflict
 		if (tagsToStrip & updFlag) {
 			cerr << g_progname << ": conflicting options: strip and write the same tag version" << endl;
@@ -584,18 +576,16 @@ int main(int argc, char **argv) {
 			cerr << g_progname << ": conflicting options: strip id3v2 tag, --" << framesToModify[0]->id() << endl;
 			error = 2;
 		}
+		// check for missing mandatory arguments
+		if (optind == 1) {
+			cerr << g_progname << ": missing arguments" << endl;
+			error = 2;
+		} else if (g_numFiles == 0) {
+			cerr << g_progname << ": missing <FILES>" << endl;
+			error = 2;
+		}
 	}
 	
-	g_numFiles = argc - optind;
-
-	if (optind == 1) {
-		cerr << g_progname << ": missing arguments" << endl;
-		error = 2;
-	} else if (g_numFiles == 0) {
-		cerr << g_progname << ": missing <FILES>" << endl;
-		error = 2;
-	}
-
 	if (error) {
 		cerr << "Try `" << argv[0] << " --help' for more information." << endl;
 		exit(error);
@@ -647,7 +637,7 @@ int main(int argc, char **argv) {
 			continue;
 		}
 
-		if (haveToWriteFile && !MP3File::isWritable(file)) {
+		if (writeFile && !MP3File::isWritable(file)) {
 			cerr << g_progname << ": " << file << ": Could not open file for writing" << endl;
 			retCode |= 8;
 			continue;
@@ -668,7 +658,7 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		if (haveToExtractAPICs) {
+		if (extractAPICs) {
 			mp3File.extractAPICs(forceOverwrite);
 		}
 
@@ -699,7 +689,7 @@ int main(int argc, char **argv) {
 		}
 
 		// save the specified tags to the file
-		if (haveToWriteFile) {
+		if (writeFile) {
 			if (updFlag) {
 				mp3File.save(updFlag);
 			} else {
@@ -716,11 +706,11 @@ int main(int argc, char **argv) {
 		}
 
 		// print out requested information
-		if (haveToShowInfo || haveToListTags || haveToPrintLameTag) {
+		if (showInfo || listTags || printLameTag) {
 			cout << file << ":" << endl;
-			if (haveToShowInfo) mp3File.showInfo();
-			if (haveToPrintLameTag) mp3File.printLameTag(checkLameCRC);
-			if (haveToListTags) mp3File.listTags(listV2WithDesc);
+			if (showInfo) mp3File.showInfo();
+			if (printLameTag) mp3File.printLameTag(checkLameCRC);
+			if (listTags) mp3File.listTags(listV2WithDesc);
 			if (fn_idx < argc - 1) cout << endl;
 		}
 
@@ -739,14 +729,11 @@ int main(int argc, char **argv) {
 		// reset access and modification times to
 		// their old values present before accessing the file:
 		if (preserveTimes && (orgPattern == NULL || !orgMove)) {
-			// bug in Mac OS X 10.6.1 (Build 10B504): utimes did not reset access time correctly?
-			// turns out the Spotlight md...-crap checks files after every write access
-			// without taking care of the files' times
 			utimes(file, ptimes);
 		}
 	}
 
-	// cleanup - useless cause at the end
+	// cleanup - useless because at the end
 	if (fPathRegEx != NULL) {
 		regfree(fPathRegEx);
 		free(fPathRegEx);

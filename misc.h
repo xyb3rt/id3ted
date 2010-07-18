@@ -1,5 +1,5 @@
 /* id3ted: misc.h
- * Copyright (c) 2009 Bert Muennich <muennich at informatik.hu-berlin.de>
+ * Copyright (c) 2010 Bert Muennich <muennich at informatik.hu-berlin.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@
 #ifndef __MISC_H__
 #define __MISC_H__
 
-#include "common.h"
+#include "id3ted.h"
 
 #ifdef NO_STR_BASENAME
 const char* basename(const char*);

@@ -1,5 +1,5 @@
 /* id3ted: misc.cpp
- * Copyright (c) 2009 Bert Muennich <muennich at informatik.hu-berlin.de>
+ * Copyright (c) 2010 Bert Muennich <muennich at informatik.hu-berlin.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,39 +67,33 @@ static unsigned short crc16_table[256] = {
 // should behave like the implementation found on most *nix-systems
 const char* basename(const char *string) {
   // statically allocated buffer, sometimes used for result
-  static char *buf = NULL;
+  static char *buf = NULL, *res;
   static int buf_size = 0;
+	int len, str_len, new_len;
 
-  if (string == NULL || *string == 0) {
+  if (string == NULL || *string == 0)
     return ".";
-  }
-
-  const char *res = strrchr(string, '/');
-
+  res = strrchr(string, '/');
   if (res == NULL) {
     // string contains no slash
     res = string;
   } else {
     if (*(res + 1) == 0) {
       // right most slash is last char in string
-      int len = 1;
-      int str_len = strlen(string);
-
+      len = 1;
+      str_len = strlen(string);
       // looping back over consecutive slashes at the end
       while (*(--res) == '/' && len < str_len) len++;
 			// string only contains slashes:
       if (len == str_len) return "/";
-
-      int new_len = 1;
+      new_len = 1;
       // looping back to next slash or beginning of string
       while (*(--res) != '/' && len + new_len < str_len) new_len++;
-
       if (buf_size < new_len + 1) {
         if (buf != NULL) free(buf);
         buf = (char*) s_malloc(new_len + 1);
         buf_size = new_len + 1;
       }
-
       strncpy(buf, res+1, new_len);
       buf[new_len] = '\0';
       res = (const char*) buf;
@@ -124,104 +118,96 @@ void* s_malloc(size_t cnt) {
 }
 
 void printVersion() {
-	size_t nIndex;
-	cout << PROGNAME << " - command line id3 tag editor\n";
-	cout << "Version " << VERSION << ", written by Bert Muennich\n";
-	cout << "Uses TagLib v" << TAGLIB_MAJOR_VERSION << "." << TAGLIB_MINOR_VERSION << "." << TAGLIB_PATCH_VERSION << ", written by Scott Wheeler" << endl;
+	cout << PROGNAME << " - command line id3 tag editor\n"
+	     << "Version " << VERSION << ", written by Bert Muennich\n"
+	     << "Uses TagLib v" << TAGLIB_MAJOR_VERSION << "." << TAGLIB_MINOR_VERSION << "." << TAGLIB_PATCH_VERSION << ", written by Scott Wheeler" << endl;
 }
 
 void printUsage() {
-	cout << "Usage: " << g_progname << " [OPTIONS]... <FILES>\n\n";
-	cout << "OPTIONS:\n";
-	cout << "If a long option shows an argument as mandatory,\n";
-	cout << "then it is also mandatory for the equivalent short option.\n\n";
-	cout << "  -h, --help             display this help and exit\n";
-	cout << "  -f, --list-frames      display all possible frames for id3v2\n";
-	cout << "  -G, --list-genres      list all id3v1 genres\n";
-	cout << "  -v, --version          display version information and exit\n";
-	cout << "  -i, --info             display general information for the files\n";
-	cout << "  -l, --list             list the tags on the files\n";
-	cout << "  -L, --list-wd          same as -l, but list id3v2 frames with description\n";
-	cout << "  -e, --lame-tag         print the lame tags of the files\n";
-	cout << "  -E, --lame-tag-crc     same as -e, but verify CRC checksums (slower)\n";
-	cout << "  -s, --strip-v1         strip id3v1 tag\n";
-	cout << "  -S, --strip-v2         strip id3v2 tag\n";
-	cout << "  -D, --delete-all       delete both id3v1 and id3v2 tag\n";
-	cout << "  -1, --id3v1-only       write only id3v1 tag,\n";
-	cout << "                         convert v2 to v1 tag if file has no id3v1 tag\n";
-	cout << "  -2, --id3v2-only       same as -1, but vice versa\n";
-	cout << "  -3, --write-all        write both id3v1 and id3v2 tag,\n";
-	cout << "                         create and convert non-existing tags\n";
-	cout << "  -m, --org-move         when using -o, move files instead of copying them\n";
-	cout << "  -F, --force            overwrite files without asking (-o, -x)\n";
-	cout << "  -p, --preserve-times   preserve access and modification times of the files\n"; 
-	cout << "  -x, --extract-apics    extract all attached pictures\n";
-	cout << "  -d, --delimiter C      set delimiter for succeeding multiple field option\n";
-	cout << "                         arguments to the given character (default is '" << FIELD_DELIM << "')\n";
-	cout << "  -r, --remove FID       remove all id3v2 frames with the given frame id\n";
-	cout << "  -n, --file-pattern PATTERN\n";
-	cout << "                         extract tag information from the given filenames,\n";
-	cout << "                         using PATTERN (for wildcards see below)\n";
-	cout << "  -N, --file-regex PATTERN\n";
-	cout << "                         same as -n, but interpret PATTERN as extended regex\n";
-	cout << "  -o, --organize PATTERN organize files into directory structure specified\n";
-	cout << "                         by PATTERN (for supported wildcards see below)\n";
-	cout << "  -a, --artist ARTIST    set the artist information\n";
-	cout << "  -A, --album ALBUM      set the album title information\n";
-	cout << "  -t, --title SONG       set the song title information\n";
-	cout << "  -c, --comment COMMENT  set the comment information\n";
-	cout << "  -g, --genre NUM        set the genre number\n";
-	cout << "  -T, --track NUM[/NUM]  set the track number/optional: total # of tracks\n";
-	cout << "  -y, --year NUM         set the year\n\n";
-	cout << "The following wildcards are supported for the -o,-n,-N option arguments:\n";
-	cout << "    %a: Artist, %A: album, %t: title, %g: genre, %y: year,\n";
-	cout << "    %d: disc number, %n: track number, %%: percent sign\n\n";
-	cout << "You can add and modify almost any id3v2 frame by using it's frame id\n";
-	cout << "as a long option and the value to apply as the option argument.\n";
-	cout << "For example: \n";
-	cout << "    " << g_progname << " --TALB \"Sjofn\" file.mp3\n";
-	cout << "would set the \"Album/Movie/Show title\" frame to \"Sjofn\".\n";
-	cout << "Use `" << g_progname << " -f' to get a list of supported frames (marked with *).\n\n";
-	cout << "There are some frames with multiple fields:\n";
-	cout << "    --COMM COMMENT[" << FIELD_DELIM << "DESCRIPTION[" << FIELD_DELIM << "LANGUAGE]]\n";
-	cout << "    --TXXX TEXT" << FIELD_DELIM << "DESCRIPTION\n";
-	cout << "    --USLT LYRICS[" << FIELD_DELIM << "DESCRIPTION[" << FIELD_DELIM << "LANGUAGE]]\n";
-	cout << "    --WXXX URL[" << FIELD_DELIM << "DESCRIPTION]\n";
-	cout << "The fields enclosed in square brackets are optional.\n";
-	cout << "LANGUAGE is a 3 byte code as specified in ISO-639-2.\n\n";
-	cout << "The argument for --APIC has to be the path to an image file!\n\n";
-	cout << "When using -x or --extract-apics all attached pictures are saved\n";
-	cout << "as MP3FILENAME.apic-NUM.FORMAT in the current working directory." << endl;
+	cout << "Usage: " << g_progname << " [OPTIONS]... <FILES>\n\n"
+	     << "OPTIONS:\n"
+	     << "If a long option shows an argument as mandatory,\n"
+	     << "then it is also mandatory for the equivalent short option.\n\n"
+	     << "  -h, --help             display this help and exit\n"
+	     << "  -v, --version          display version information and exit\n"
+	     << "      --list-frames      list all possible frame types for id3v2\n"
+	     << "      --list-genres      list all id3v1 genres and their corresponding numbers\n"
+	     << "  -p, --preserve-times   preserve access and modification times of the files\n"
+	     << "  -d, --delimiter CHAR   set the delimiter for multiple field option arguments\n"
+	     << "                         to the given character (default is '" << FIELD_DELIM << "')\n\n";
+	cout << "To alter the most common tag information:\n"
+	     << "  -a, --artist ARTIST    set the artist information\n"
+	     << "  -A, --album ALBUM      set the album title information\n"
+	     << "  -t, --title SONG       set the song title information\n"
+	     << "  -c, --comment COMMENT  set the comment information\n"
+	     << "  -g, --genre NUM        set the genre number\n"
+	     << "  -T, --track NUM[/NUM]  set the track number/optional: total # of tracks\n"
+	     << "  -y, --year NUM         set the year\n\n";
+	cout << "Get information from the files:\n"
+	     << "  -i, --info             display general information for the files\n"
+	     << "  -l, --list             list the tags on the files\n"
+	     << "  -L, --list-wd          same as -l, but list id3v2 frames with description\n"
+	     << "  -m, --lame-tag         print the lame tags of the files\n"
+	     << "  -M, --lame-tag-crc     same as -e, but verify CRC checksums (slower)\n\n"
+	     << "To remove tags & specify which tag version(s) to write:\n"
+	     << "  -r, --remove FID       remove all id3v2 frames with the given frame id\n"
+	     << "  -D, --delete-all       delete both id3v1 and id3v2 tag\n"
+	     << "  -s, --strip-v1         strip id3v1 tag\n"
+	     << "  -S, --strip-v2         strip id3v2 tag\n"
+	     << "  -1                     write only id3v1 tag,\n"
+	     << "                         convert v2 to v1 tag if file has no id3v1 tag\n"
+	     << "  -2                     same as -1, but vice versa\n"
+	     << "  -3                     write both id3v1 and id3v2 tag,\n"
+	     << "                         create and convert non-existing tags\n\n";
+	cout << "Filename <-> tag information:\n"
+	     << "  -n, --file-pattern PATTERN\n"
+	     << "                         extract tag information from the given filenames,\n"
+	     << "                         using PATTERN (for supported wildcards see below)\n"
+	     << "  -N, --file-regex PATTERN\n"
+	     << "                         same as -n, but interpret PATTERN as an extended regex\n"
+	     << "  -o, --organize PATTERN organize files into directory structure specified\n"
+	     << "                         by PATTERN (for supported wildcards see below)\n"
+	     << "  -x, --extract-apics    extract attached pictures into the current\n"
+	     << "                         working directory as FILENAME.apic-NUM.FORMAT\n"
+	     << "  -f, --force            overwrite existing files without asking (-o,-x)\n"
+	     << "      --move             when using -o, move files instead of copying them\n\n";
+	cout << "The following wildcards are supported for the -o,-n,-N option arguments:\n"
+	     << "    %a: Artist, %A: album, %t: title, %g: genre, %y: year,\n"
+	     << "    %d: disc number, %n: track number, %%: percent sign\n\n"
+	     << "You can add and modify almost any id3v2 frame by using its 4-letter frame id\n"
+	     << "as a long option and the value to apply as the option argument.\n"
+	     << "Use --list-frames to get a list of supported frames (marked with *).\n"
+	     << "The argument for --APIC has to be the path of an image file!\n\n"
+	     << "There are some frames which support multiple field arguments:\n"
+	     << "      --COMM COMMENT[" << FIELD_DELIM << "DESCRIPTION[" << FIELD_DELIM << "LANGUAGE]]\n"
+	     << "      --TXXX TEXT" << FIELD_DELIM << "DESCRIPTION\n"
+	     << "      --USLT LYRICS[" << FIELD_DELIM << "DESCRIPTION[" << FIELD_DELIM << "LANGUAGE]]\n"
+	     << "      --WXXX URL[" << FIELD_DELIM << "DESCRIPTION]\n"
+	     << "Fields in square brackets are optional, LANGUAGE is an ISO-639-2 3-byte code." << endl;
 }
 
 const char* getMimeType(const char *file) {
   static char *buf = NULL;
-  static int buf_size = 0;
-
-	const char *mimetype = NULL;
+  static int buf_size = 0, mtlen;
+	const char *mimetype = NULL, *mttemp;
 	struct magic_set *mcookie;
 
 	if ((mcookie = magic_open(MAGIC_MIME|MAGIC_CHECK)) != NULL) {
 		if (magic_load(mcookie, NULL) == 0) {
 			mimetype = magic_file(mcookie, file);
-			int mtlen = strlen(mimetype);
-			
-			const char *mttemp = strchr(mimetype, ';');
-			if (mttemp != NULL) {
+			mtlen = strlen(mimetype);
+			mttemp = strchr(mimetype, ';');
+			if (mttemp != NULL)
 				mtlen = mttemp - mimetype;
-			}
-
 			if (mtlen + 1 > buf_size) {
 				if (buf != NULL) free(buf);
 				buf = (char*) s_malloc(mtlen + 1);
 				buf_size = mtlen + 1;
 			}
-
 			strncpy(buf, mimetype, mtlen);
 			buf[mtlen] = '\0';
 			mimetype = buf;
 		}
-
 		magic_close(mcookie);
 	}
 	
@@ -244,12 +230,11 @@ void trim_whitespace(std::string &str) {
 
 int creat_dir_r(const char *path) {
 	char *directory = (char*) s_malloc(strlen(path + 1));
-	strcpy(directory, path);
-
 	char *curr = directory;
 	struct stat dir_stats;
 	int ret = 0;
 
+	strcpy(directory, path);
 	while (curr != NULL && ret == 0) {
 		curr = strchr(curr + 1, '/');
 		if (curr != NULL) *curr = '\0';
@@ -262,26 +247,26 @@ int creat_dir_r(const char *path) {
 			cerr << g_progname << ": " << directory << ": Not a directory" << endl;
 			ret = 2;
 		}
-		if (curr != NULL) *curr = '/';
+		if (curr != NULL)
+			*curr = '/';
 	}
-
-	if (directory != NULL) free(directory);
+	if (directory != NULL)
+		free(directory);
 
 	return ret;
 }
 
 bool confirm_overwrite(const char *filename) {
 	char *buf = (char*) s_malloc(10);
+	char *userIn;
 	bool ret = false;
 
 	while (1) {
 		cout << "overwrite " << filename << "? [yN] ";
-		char *userIn = fgets(buf, 10, stdin);
-
+		userIn = fgets(buf, 10, stdin);
 		if (userIn == NULL) {
 			continue;
 		}
-
 		if (strcmp(buf, "\n") == 0 || strcmp(buf, "n\n") == 0 || strcmp(buf, "N\n") == 0) {
 			break;
 		} else if (strcmp(buf, "y\n") == 0 || strcmp(buf, "Y\n") == 0) {
@@ -289,8 +274,8 @@ bool confirm_overwrite(const char *filename) {
 			break;
 		}
 	}
-	
-	if (buf != NULL) free(buf);
+	if (buf != NULL)
+		free(buf);
 	
 	return ret;
 }
@@ -317,7 +302,6 @@ void crc16_block(unsigned short *crc, const char *data, int size) {
 void crc16_last_block(unsigned short *crc, const char *data, int size) {
 	crc16_block(crc, data, size);
 	data += size - (size % 8);
-
 	switch (size % 8) {
 	  case 7: *crc = crc16_table[(*crc ^ *data++) & 0xff] ^ (*crc >> 8);
 	  case 6: *crc = crc16_table[(*crc ^ *data++) & 0xff] ^ (*crc >> 8);
@@ -341,7 +325,6 @@ int pre_backslash_cnt(const char* str, unsigned int i) {
 
 	if (i > strlen(str))
 		return -1;
-
 	for (; i > 0 && str[i-1] == '\\'; i--)
 		bs_cnt++;
 

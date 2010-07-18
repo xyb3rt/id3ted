@@ -1,5 +1,5 @@
 /* id3ted: frametable.cpp
- * Copyright (c) 2009 Bert Muennich <muennich at informatik.hu-berlin.de>
+ * Copyright (c) 2010 Bert Muennich <muennich at informatik.hu-berlin.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,11 +31,11 @@ FrameTable::frame_table_entry_t FrameTable::_table[] = {
 	{ "COMR", FID3_COMR, "Commercial frame" },
 	{ "ENCR", FID3_ENCR, "Encryption method registration" },
 	{ "EQU2", FID3_EQU2, "Equalisation (2)" },
-	{ "EQUA", FID3_EQUA, "Equalisation" }, // *** ID3v2.3 only
+	{ "EQUA", FID3_EQUA, "Equalisation" }, /* ID3v2.3 only */
 	{ "ETCO", FID3_ETCO, "Event timing codes" },
 	{ "GEOB", FID3_GEOB, "General encapsulated object" },
 	{ "GRID", FID3_GRID, "Group identification registration" },
-	{ "IPLS", FID3_IPLS, "Involved people list" }, // *** ID3v2.3 only
+	{ "IPLS", FID3_IPLS, "Involved people list" }, /* ID3v2.3 only */
 	{ "LINK", FID3_LINK, "Linked information" },
 	{ "MCDI", FID3_MCDI, "Music CD identifier" },
 	{ "MLLT", FID3_MLLT, "MPEG location lookup table" },
@@ -46,7 +46,7 @@ FrameTable::frame_table_entry_t FrameTable::_table[] = {
 	{ "PRIV", FID3_PRIV, "Private frame" },
 	{ "RBUF", FID3_RBUF, "Recommended buffer size" },
 	{ "RVA2", FID3_RVA2, "Relative volume adjustment (2)" },
-	{ "RVAD", FID3_RVAD, "Relative volume adjustment" }, // *** ID3v2.3 only
+	{ "RVAD", FID3_RVAD, "Relative volume adjustment" }, /* ID3v2.3 only */
 	{ "RVRB", FID3_RVRB, "Reverb" },
 	{ "SEEK", FID3_SEEK, "Seek frame" },
 	{ "SIGN", FID3_SIGN, "Signature frame" },
@@ -57,7 +57,7 @@ FrameTable::frame_table_entry_t FrameTable::_table[] = {
 	{ "TCOM", FID3_TCOM, "Composer" },
 	{ "TCON", FID3_TCON, "Content type" },
 	{ "TCOP", FID3_TCOP, "Copyright message" },
-	{ "TDAT", FID3_TDAT, "Date" }, // *** ID3v2.3 only
+	{ "TDAT", FID3_TDAT, "Date" }, /* ID3v2.3 only */
 	{ "TDEN", FID3_TDEN, "Encoding time" },
 	{ "TDLY", FID3_TDLY, "Playlist delay" },
 	{ "TDOR", FID3_TDOR, "Original release time" },
@@ -67,7 +67,7 @@ FrameTable::frame_table_entry_t FrameTable::_table[] = {
 	{ "TENC", FID3_TENC, "Encoded by" },
 	{ "TEXT", FID3_TEXT, "Lyricist/Text writer" },
 	{ "TFLT", FID3_TFLT, "File type" },
-	{ "TIME", FID3_TIME, "Time" }, // *** ID3v2.3 only
+	{ "TIME", FID3_TIME, "Time" }, /* ID3v2.3 only */
 	{ "TIPL", FID3_TIPL, "Involved people list (2)" },
 	{ "TIT1", FID3_TIT1, "Content group description" },
 	{ "TIT2", FID3_TIT2, "Title/songname/content description" },
@@ -82,7 +82,7 @@ FrameTable::frame_table_entry_t FrameTable::_table[] = {
 	{ "TOFN", FID3_TOFN, "Original filename" },
 	{ "TOLY", FID3_TOLY, "Original lyricist(s)/text writer(s)" },
 	{ "TOPE", FID3_TOPE, "Original artist(s)/performer(s)" },
-	{ "TORY", FID3_TORY, "Original release year" }, // *** ID3v2.3 only
+	{ "TORY", FID3_TORY, "Original release year" }, /* ID3v2.3 only */
 	{ "TOWN", FID3_TOWN, "File owner/licensee" },
 	{ "TPE1", FID3_TPE1, "Lead performer(s)/Soloist(s)" },
 	{ "TPE2", FID3_TPE2, "Band/orchestra/accompaniment" },
@@ -92,10 +92,10 @@ FrameTable::frame_table_entry_t FrameTable::_table[] = {
 	{ "TPRO", FID3_TPRO, "Produced notice" },
 	{ "TPUB", FID3_TPUB, "Publisher" },
 	{ "TRCK", FID3_TRCK, "Track number/Position in set" },
-	{ "TRDA", FID3_TRDA, "Recording dates" }, // *** ID3v2.3 only
+	{ "TRDA", FID3_TRDA, "Recording dates" }, /* ID3v2.3 only */
 	{ "TRSN", FID3_TRSN, "Internet radio station name" },
 	{ "TRSO", FID3_TRSO, "Internet radio station owner" },
-	{ "TSIZ", FID3_TSIZ, "Size" }, // *** ID3v2.3 only
+	{ "TSIZ", FID3_TSIZ, "Size" }, /* ID3v2.3 only */
 	{ "TSOA", FID3_TSOA, "Album sort order" },
 	{ "TSOP", FID3_TSOP, "Performer sort order" },
 	{ "TSOT", FID3_TSOT, "Title sort order" },
@@ -103,7 +103,7 @@ FrameTable::frame_table_entry_t FrameTable::_table[] = {
 	{ "TSSE", FID3_TSSE, "Software/Hardware and settings used for encoding" },
 	{ "TSST", FID3_TSST, "Set subtitle" },
 	{ "TXXX", FID3_TXXX, "User defined text information frame" },
-	{ "TYER", FID3_TYER, "Year" }, // *** ID3v2.3 only
+	{ "TYER", FID3_TYER, "Year" }, /* ID3v2.3 only */
 	{ "UFID", FID3_UFID, "Unique file identifier" },
 	{ "USER", FID3_USER, "Terms of use" },
 	{ "USLT", FID3_USLT, "Unsynchronised lyric/text transcription" },
@@ -123,17 +123,15 @@ const char* FrameTable::frameDescription(const char *textFrameID) {
 	int a = 0, b = _tableSize;
 	int i, cmp;
 
-	while (a <= b) {
+	while (a < b) {
 		i = (a + b) / 2;
-
 		cmp = strncmp(_table[i].id, textFrameID, 4);
-		if (!cmp) {
+		if (!cmp)
 			return _table[i].description;
-		} else if (cmp < 0) {
+		else if (cmp < 0)
 			a = i + 1;
-		} else {
+		else
 			b = i - 1;
-		}
 	}
 
 	return _table[0].description;
@@ -143,17 +141,15 @@ ID3v2FrameID FrameTable::frameID(const char *textFrameID) {
 	int a = 0, b = _tableSize;
 	int i, cmp;
 
-	while (a <= b) {
+	while (a < b) {
 		i = (a + b) / 2;
-
 		cmp = strcmp(_table[i].id, textFrameID);
-		if (!cmp) {
+		if (!cmp)
 			return _table[i].fid;
-		} else if (cmp < 0) {
+		else if (cmp < 0)
 			a = i + 1;
-		} else {
+		else
 			b = i - 1;
-		}
 	}
 
 	return _table[0].fid;
@@ -165,14 +161,12 @@ const char* FrameTable::textFrameID(ID3v2FrameID frameID) {
 
 	while (a <= b) {
 		i = (a + b) / 2;
-
-		if (_table[i].fid == frameID) {
+		if (_table[i].fid == frameID)
 			return _table[i].id;
-		} else if (_table[i].fid < frameID) {
+		else if (_table[i].fid < frameID)
 			a = i + 1;
-		} else {
+		else
 			b = i - 1;
-		}
 	}
 
 	return _table[0].id;
@@ -211,19 +205,18 @@ void FrameTable::printFrameHelp() {
 			case FID3_TRDA:
 			case FID3_TSIZ:
 			case FID3_TYER:
-			case FID3_UFID: {
+			case FID3_UFID:
 				cout << "    ";
 				break;
-			}
-			default: {
+			default:
 				cout << "  * ";
 				break;
-			}
 		}
 		cout << _table[i].id << "  " << _table[i].description << "\n";
 	}
 
-	cout << "\nFrames marked with * are supported by the --FID option. You can use the ID\n";
-	cout << "as a long-option to set the value of the frame to the option argument." << endl;
+	cout << "\n"
+	     << "(*): Frame with write support: You can use the 4-letter frame ID as a\n"
+	     << "     long option to set the content of the frame to the option argument." << endl;
 }
 

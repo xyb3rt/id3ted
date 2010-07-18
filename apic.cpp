@@ -1,5 +1,5 @@
 /* id3ted: apic.cpp
- * Copyright (c) 2009 Bert Muennich <muennich at informatik.hu-berlin.de>
+ * Copyright (c) 2010 Bert Muennich <muennich at informatik.hu-berlin.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include <taglib/id3v2frame.h>
 #include <taglib/attachedpictureframe.h>
 
-#include "common.h"
+#include "id3ted.h"
 #include "frameinfo.h"
 #include "misc.h"
 #include "mp3file.h"

@@ -1,5 +1,5 @@
 /* id3ted: frameinfo.h
- * Copyright (c) 2009 Bert Muennich <muennich at informatik.hu-berlin.de>
+ * Copyright (c) 2010 Bert Muennich <muennich at informatik.hu-berlin.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 #include <taglib/tbytevector.h>
 #include <taglib/tstring.h>
 
-#include "common.h"
+#include "id3ted.h"
 
 class MP3File;
 
