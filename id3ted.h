@@ -24,7 +24,7 @@
 #include <taglib/taglib.h>
 
 #define PROGNAME "id3ted"
-#define VERSION  "0.7.1"
+#define VERSION  "0.7.2"
 
 #define FILE_BUF_SIZE 4096
 #define FIELD_DELIM ':'
