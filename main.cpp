@@ -40,8 +40,8 @@
 #endif
 
 enum opt_long_only {
-	OPT_LO_LIST_FRAMES = 128,
-	OPT_LO_LIST_GENRES,
+	OPT_LO_FRAME_LIST = 128,
+	OPT_LO_GENRE_LIST,
 	OPT_LO_ORG_MOVE
 };
 
@@ -50,8 +50,8 @@ static const struct option long_options[] = {
   /* help, general info & others */
   { "help",           no_argument,       NULL, 'h' },
   { "version",        no_argument,       NULL, 'v' },
-  { "list-frames",    no_argument,       NULL, OPT_LO_LIST_FRAMES },
-  { "list-genres",    no_argument,       NULL, OPT_LO_LIST_GENRES },
+  { "frame-list",     no_argument,       NULL, OPT_LO_FRAME_LIST },
+  { "genre-list",     no_argument,       NULL, OPT_LO_GENRE_LIST },
   { "preserve-times", no_argument,       NULL, 'p' },
   { "delimiter",      required_argument, NULL, 'd' },
   /* alter generic tag infomation */
@@ -244,10 +244,10 @@ int main(int argc, char **argv) {
 			case 'v':
 				printVersion();
 				exit(0);
-			case OPT_LO_LIST_FRAMES:
+			case OPT_LO_FRAME_LIST:
 				FrameTable::printFrameHelp();
 				exit(0);
-			case OPT_LO_LIST_GENRES:
+			case OPT_LO_GENRE_LIST:
 				printGenreList();
 				exit(0);
 			case 'p':

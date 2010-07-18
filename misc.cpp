@@ -131,8 +131,8 @@ void printUsage() {
 	     << "then it is also mandatory for the equivalent short option.\n\n"
 	     << "  -h, --help             display this help and exit\n"
 	     << "  -v, --version          display version information and exit\n"
-	     << "      --list-frames      list all possible frame types for id3v2\n"
-	     << "      --list-genres      list all id3v1 genres and their corresponding numbers\n"
+	     << "      --frame-list       list all possible frame types for id3v2\n"
+	     << "      --genre-list       list all id3v1 genres and their corresponding numbers\n"
 	     << "  -p, --preserve-times   preserve access and modification times of the files\n"
 	     << "  -d, --delimiter CHAR   set the delimiter for multiple field option arguments\n"
 	     << "                         to the given character (default is '" << FIELD_DELIM << "')\n\n";
