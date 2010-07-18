@@ -42,7 +42,7 @@
 enum opt_long_only {
 	OPT_LO_LIST_FRAMES = 128,
 	OPT_LO_LIST_GENRES,
-	OPT_LO_ORG_MOVE,
+	OPT_LO_ORG_MOVE
 };
 
 static int optFrameID;
@@ -346,7 +346,7 @@ int main(int argc, char **argv) {
 				ostringstream regExPattern;
 				bool wcardPresent = false;
 
-				for (int i = 0; i < strlen(optarg) && fPathRegEx != NULL; i++) {
+				for (uint i = 0; i < strlen(optarg) && fPathRegEx != NULL; i++) {
 					if (optarg[i] == '%') {
 						if (i + 1 >= strlen(optarg)) {
 							cerr << g_progname << ": -" << (char) opt << " option ignored, because pattern ends with an invalid character" << endl;

@@ -1,19 +1,19 @@
 all: id3ted
 
-CXX=g++
+CC=g++
 PREFIX?=/usr/local
 # see INSTALL for available preprocessor variables
-CXXFLAGS+= -I$(PREFIX)/include/ -I$(PREFIX)/include/taglib -I/opt/local/include -I/opt/local/include/taglib -DNO_STR_BASENAME
-LDFLAGS+= -ltag -lmagic -L$(PREFIX)/lib -L/opt/local/lib
+CFLAGS+= -I$(PREFIX)/include -I/opt/local/include -Wall -pedantic -DNO_STR_BASENAME
+LDFLAGS+= -L$(PREFIX)/lib -L/opt/local/lib -ltag -lmagic
 
 CPPFILES=$(wildcard *.cpp)
 OBJFILES=$(CPPFILES:.cpp=.o)
 
 id3ted:	$(OBJFILES)
-	$(CXX) $(LDFLAGS) -pedantic -Wall -O3 -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^
 
 %.o: %.cpp Makefile
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 install: all
 	install -d -m 0755 id3ted $(PREFIX)/bin/id3ted

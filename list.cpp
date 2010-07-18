@@ -37,53 +37,45 @@
 #include "mp3file.h"
 
 void printGenreList() {
-	int i;
-
-	for (i = 0; i < ID3v1::genreList().size(); i++) {
+	for (uint i = 0; i < ID3v1::genreList().size(); i++) {
 		printf("  %5d: ", i);
 		cout << ID3v1::genre(i) << endl;
 	}
 }
 
 bool MP3File::listID3v1Tag() const {
-	if (_id3v1Tag == NULL || _id3v1Tag->isEmpty()) {
+	if (_id3v1Tag == NULL || _id3v1Tag->isEmpty())
 		return false;
-	}
 
 	int year = _id3v1Tag->year();
 	TagLib::String genreStr = _id3v1Tag->genre();
 	int genreIdx = ID3v1::genreIndex(genreStr);
 	
 	cout << "ID3v1" << ":\n";
-
 	printf("Title  : %-30s  Track: %d\n",
 			_id3v1Tag->title().toCString(USE_UNICODE), _id3v1Tag->track());
-	
 	printf("Artist : %-30s  Year : %-4s\n",
 			_id3v1Tag->artist().toCString(USE_UNICODE),
 			(year != 0 ? TagLib::String::number(year).toCString() : ""));
-
 	printf("Album  : %-30s  Genre: %s (%d)\n",
 			_id3v1Tag->album().toCString(USE_UNICODE),
 			(genreIdx == 255 ? "Unknown" : genreStr.toCString()), genreIdx);
-
 	printf("Comment: %s\n", _id3v1Tag->comment().toCString(USE_UNICODE));
 
 	return true;
 }
 
 bool MP3File::listID3v2Tag(bool withDesc) const {
-	if (_id3v2Tag == NULL || _id3v2Tag->isEmpty()) {
+	if (_id3v2Tag == NULL || _id3v2Tag->isEmpty())
 		return false;
-	}
 
 	int frameCount = _id3v2Tag->frameList().size(); 
 
 	cout << "ID3v2." << _id3v2Tag->header()->majorVersion() << " - " << frameCount << (frameCount != 1 ? " frames:" : " frame:") << "\n";
 	
-	ID3v2::FrameList::ConstIterator it = _id3v2Tag->frameList().begin();
-	for (; it != _id3v2Tag->frameList().end(); it++) {
-		String textFID((*it)->frameID(), DEF_TSTR_ENC);
+	ID3v2::FrameList::ConstIterator fl_it = _id3v2Tag->frameList().begin();
+	for (; fl_it != _id3v2Tag->frameList().end(); fl_it++) {
+		String textFID((*fl_it)->frameID(), DEF_TSTR_ENC);
 		const char *ctextFID = textFID.toCString(USE_UNICODE);
 
 		cout << textFID;
@@ -92,80 +84,72 @@ bool MP3File::listID3v2Tag(bool withDesc) const {
 		
 		switch (FrameTable::frameID(ctextFID)) {
 			case FID3_APIC: {
-				ID3v2::AttachedPictureFrame *apf = dynamic_cast<ID3v2::AttachedPictureFrame*>(*it);
+				ID3v2::AttachedPictureFrame *apf = dynamic_cast<ID3v2::AttachedPictureFrame*>(*fl_it);
 				if (apf != NULL) {
 					int picSize = apf->picture().size();
 					cout << apf->mimeType() << ", ";
 					printSizeHumanReadable(picSize);
 				}
-
 				break;
 			}
 			case FID3_COMM: {
-				ID3v2::CommentsFrame *cf = dynamic_cast<ID3v2::CommentsFrame*>(*it);
-				if (cf != NULL) cout << "[" << cf->description().toCString(USE_UNICODE) << "](" << cf->language() << "): " << cf->toString().toCString(USE_UNICODE);
-
+				ID3v2::CommentsFrame *cf = dynamic_cast<ID3v2::CommentsFrame*>(*fl_it);
+				if (cf != NULL)
+					cout << "[" << cf->description().toCString(USE_UNICODE) << "](" << cf->language() << "): " << cf->toString().toCString(USE_UNICODE);
 				break;
 			}
 			case FID3_TCON: {
-				String genreStr = (*it)->toString();
+				String genreStr = (*fl_it)->toString();
 				int genreIdx = 255;
 				sscanf(genreStr.toCString(), "(%d)", &genreIdx);
 
-				if (genreIdx == 255) {
+				if (genreIdx == 255)
 					sscanf(genreStr.toCString(), "%d", &genreIdx);
-				}
-				if (genreIdx != 255) {
+				if (genreIdx != 255)
 					genreStr = ID3v1::genre(genreIdx);
-				}
-
 				cout << genreStr;
 				break;
 			}
 			case FID3_USLT: {
-				ID3v2::UnsynchronizedLyricsFrame *ulf = dynamic_cast<ID3v2::UnsynchronizedLyricsFrame*>(*it);
+				ID3v2::UnsynchronizedLyricsFrame *ulf = dynamic_cast<ID3v2::UnsynchronizedLyricsFrame*>(*fl_it);
 				if (ulf != NULL) {
 					const char *lyrics = ulf->text().toCString(USE_UNICODE);
 					const char *indent = "    ";
 
 					cout << "[" << ulf->description() << "](" << ulf->language() << "):\n" << indent;
 					while (*lyrics != '\0') {
-						if (*lyrics == (char) 10 || *lyrics == (char) 13) {
+						if (*lyrics == (char) 10 || *lyrics == (char) 13)
 							cout << "\n" << indent;
-						} else {
+						else
 							putchar(*lyrics);
-						}
 						lyrics++;
 					}
 				}
-
 				break;
 			}
 			case FID3_TXXX: {
-				ID3v2::UserTextIdentificationFrame *utif = dynamic_cast<ID3v2::UserTextIdentificationFrame*>(*it);
+				ID3v2::UserTextIdentificationFrame *utif = dynamic_cast<ID3v2::UserTextIdentificationFrame*>(*fl_it);
 				if (utif != NULL) {
 					StringList textList = utif->fieldList();
 					cout << "[" << utif->description() << "]: ";
-					if (textList.size() > 1) cout << textList[1].toCString(USE_UNICODE);
+					if (textList.size() > 1)
+						cout << textList[1].toCString(USE_UNICODE);
 				}
-
 				break;
 			}
 			case FID3_WXXX: {
-				ID3v2::UserUrlLinkFrame *uulf = dynamic_cast<ID3v2::UserUrlLinkFrame*>(*it);
-				if (uulf != NULL) cout << "[" << uulf->description() << "]: " << uulf->url().toCString(USE_UNICODE);
-
+				ID3v2::UserUrlLinkFrame *uulf = dynamic_cast<ID3v2::UserUrlLinkFrame*>(*fl_it);
+				if (uulf != NULL)
+					cout << "[" << uulf->description() << "]: " << uulf->url().toCString(USE_UNICODE);
 				break;
 			}
 			case FID3_XXXX: {
 				break;
 			}
-			default: {
-				cout << (*it)->toString().toCString(USE_UNICODE);
+			default:
+				cout << (*fl_it)->toString().toCString(USE_UNICODE);
 				break;
-			}
 		}
-
 		cout << endl;
 	}
 	
@@ -173,69 +157,58 @@ bool MP3File::listID3v2Tag(bool withDesc) const {
 }
 
 void MP3File::listTags(bool v2WithDesc) const {
-	if (!_file.isValid()) return;
+	if (!_file.isValid())
+		return;
 
 	int tagsListed = 0;
 
-	if (listID3v1Tag()) {
+	if (listID3v1Tag())
 		tagsListed |= 1;
-	}
-
-	if (listID3v2Tag(v2WithDesc)) {
+	if (listID3v2Tag(v2WithDesc))
 		tagsListed |= 2;
-	}
-
-	if (tagsListed == 0) {
+	if (tagsListed == 0)
 		cout << "No id3 tag found" << endl;
-	}
 }
 
 void MP3File::showInfo() const {
-	if (!_file.isValid()) return;
+	if (!_file.isValid())
+		return;
 
 	MPEG::Properties *properties = _file.audioProperties();
 	const char *version;
 	const char *channelMode;
 	
-	if (properties == NULL) return;
-
+	if (properties == NULL)
+		return;
 	switch (properties->version()) {
-		case 1: {
+		case 1:
 			version = "2";
 			break;
-		}
-		case 2: {
+		case 2:
 			version = "2.5";
 			break;
-		}
-		default: {
+		default:
 			version = "1";
 			break;
-		}
 	}
 
 	switch (properties->channelMode()) {
-		case 0: {
+		case 0:
 			channelMode = "Stereo";
 			break;
-		}
-		case 1: {
+		case 1:
 			channelMode = "JointStereo";
 			break;
-		}
-		case 2: {
+		case 2:
 			channelMode = "DualChannel";
 			break;
-		}
-		default: {
+		default:
 			channelMode = "SingleChannel";
 			break;
-		}
 	}
 
-	cout << "MPEG " << version << " Layer " << properties->layer() << " " << channelMode << endl;
-
 	int length = properties->length();
+	cout << "MPEG " << version << " Layer " << properties->layer() << " " << channelMode << endl;
 	printf("bitrate: %d kBit/s, sample rate: %d Hz, length: %02d:%02d:%02d\n",
 			properties->bitrate(), properties->sampleRate(),
 			length / 3600, length / 60, length % 60);
@@ -256,10 +229,9 @@ void printSizeHumanReadable(unsigned int size) {
 		unit = "KB";
 	}
 
-	if (size == size_hr) {
+	if (size == size_hr)
 		cout << size << " bytes";
-	} else {
+	else
 		printf("%.2f %s (%d bytes)", size_hr, unit, size);
-	}
 }
 

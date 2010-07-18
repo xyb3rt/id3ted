@@ -39,8 +39,9 @@
  *   2: error
  *   3: mp3 file not valid
  */
-int MP3File::organize(const char *pattern, bool move, bool overwrite, struct timeval *times) const {
-	if (!_file.isValid()) return 3;
+int MP3File::organize(const char *pattern, bool move, bool overwrite, struct timeval *ptimes) const {
+	if (!_file.isValid())
+		return 3;
 
 	if (pattern[strlen(pattern) - 1] == '/') {
 		cerr << g_progname << ": -o option ignored, because file pattern ends with a slash" << endl;
@@ -53,69 +54,66 @@ int MP3File::organize(const char *pattern, bool move, bool overwrite, struct tim
 		if (tag == NULL) {
 			cerr << g_progname << ": " << _file.name() << ": No id3 tag found" << endl;
 			return 2;
-		};
+		}
 	}
 
 	bool wcardPresent = false;
 	std::string path(pattern);
-	std::ostringstream oss;
+	std::ostringstream newPath;
 
-	// replace wildcards in pattern with corresponding tag information
-	std::string::iterator pathIter = path.begin();
-	while (pathIter != path.end()) {
+	/* replace wildcards in pattern with corresponding tag information */
+	std::string::iterator path_it = path.begin();
+	while (path_it != path.end()) {
 
-		if (*pathIter == '%') {
-			switch (*(pathIter + 1)) {
+		if (*path_it == '%') {
+			switch (*(path_it + 1)) {
 				case '%': {
-					oss << *pathIter;
+					newPath << *path_it;
 					break;
 				}
 				case 'a': {
 					TagLib::String artist = tag->artist();
-					if (artist == TagLib::String::null) {
-						oss << "Unknown Artist";
-					} else {
-						oss << artist.toCString(USE_UNICODE);
-					}
+					if (artist == TagLib::String::null)
+						newPath << "Unknown Artist";
+					else
+						newPath << artist.toCString(USE_UNICODE);
 					break;
 				}
 				case 'A': {
 					TagLib::String album = tag->album();
-					if (album == TagLib::String::null) {
-						oss << "Unknown Album";
-					} else {
-						oss << album.toCString(USE_UNICODE);
-					}
+					if (album == TagLib::String::null)
+						newPath << "Unknown Album";
+					else
+						newPath << album.toCString(USE_UNICODE);
 					break;
 				}
 				case 't': {
 					TagLib::String title = tag->title();
-					if (title == TagLib::String::null) {
-						oss << "Unknown Title";
-					} else {
-						oss << title.toCString(USE_UNICODE);
-					}
+					if (title == TagLib::String::null)
+						newPath << "Unknown Title";
+					else
+						newPath << title.toCString(USE_UNICODE);
 					break;
 				}
 				case 'g': {
 					TagLib::String genre = tag->genre();
-					if (!(genre == TagLib::String::null)) {
-						oss << genre.toCString(USE_UNICODE);
-					}
+					if (!(genre == TagLib::String::null))
+						newPath << genre.toCString(USE_UNICODE);
 					break;
 				}
 				case 'y': {
 					unsigned int year = tag->year();
 					if (year) {
-						oss << year;
+						newPath << year;
 					}
 					break;
 				}
 				case 'n': {
 					unsigned int track = tag->track();
 					if (track) {
-						if (track < 10) oss << 0;
-						oss << track;
+						if (track < 10)
+							newPath << 0;
+						newPath << track;
 					}
 					break;
 				}
@@ -123,26 +121,26 @@ int MP3File::organize(const char *pattern, bool move, bool overwrite, struct tim
 					int disc = 0;
 					if (_id3v2Tag != NULL) {
 						ID3v2::FrameList discNumList = _id3v2Tag->frameListMap()["TPOS"];
-						if (!discNumList.isEmpty()) {
+						if (!discNumList.isEmpty())
 							disc = discNumList.front()->toString().toInt();
-						}
 					}
 					if (disc) {
-						if (disc < 10) oss << 0; 
-						oss << disc;
+						if (disc < 10)
+							newPath << 0; 
+						newPath << disc;
 					}
 					break;
 				}
 				default: {
-					cerr << g_progname << ": -o option ignored, because pattern contains invalid wildcard: " << *pathIter << *(pathIter+1) << endl;
+					cerr << g_progname << ": -o option ignored, because pattern contains invalid wildcard: " << *path_it << *(path_it+1) << endl;
 					return 1;
 				}
 			}
 
 			wcardPresent = true;
-			pathIter += 2;
+			path_it += 2;
 		} else {
-			oss << *pathIter++;
+			newPath << *path_it++;
 		}
 	}
 
@@ -151,22 +149,21 @@ int MP3File::organize(const char *pattern, bool move, bool overwrite, struct tim
 		return 1;
 	}
 
-	path = oss.str();
+	path = newPath.str();
 	trim_whitespace(path);
 
 	const char *oldFile = _file.name();
 	const char *newFile = path.c_str();
-	if (strcmp(newFile, oldFile) == 0) {
-		// source and dest are the same
+	if (strcmp(newFile, oldFile) == 0)
+		/* source and dest are the same */
 		return 0;
-	}
 
 	std::string fntmp, dtmp;
 	const char *filename = NULL;
 	const char *directory = NULL;
 
-	// divide new file path in directory and filename
-	int lastSlash = path.rfind("/");
+	/* divide new file path in directory and filename */
+	uint lastSlash = path.rfind("/");
 	if (lastSlash != path.npos) {
 		dtmp = path.substr(0, lastSlash);
 		fntmp = path.substr(lastSlash + 1, path.length() - lastSlash - 1);
@@ -180,13 +177,12 @@ int MP3File::organize(const char *pattern, bool move, bool overwrite, struct tim
 	struct stat oldFileStats, newFileStats;
 	stat(oldFile, &oldFileStats);
 
-	// create target directory if necessary
+	/* create target directory if necessary */
 	if (directory != NULL) {
 		if (access(directory, W_OK) != 0) {
 			if (errno == ENOENT) {
-				if (creat_dir_r(directory) != 0) {
+				if (creat_dir_r(directory) != 0)
 					return 2;
-				}
 			} else {
 				fprintf(stderr, "%s: %s: ", g_progname, directory);
 				perror(NULL);
@@ -200,32 +196,29 @@ int MP3File::organize(const char *pattern, bool move, bool overwrite, struct tim
 			return 2;
 		}
 
-		if (newFileStats.st_dev == oldFileStats.st_dev) {
+		if (newFileStats.st_dev == oldFileStats.st_dev)
 			sameFS = true;
-		}
 	}
 
 	if (stat(newFile, &newFileStats) == 0) {
-		// already exists
+		/* new file already exists */
 		if (newFileStats.st_dev == oldFileStats.st_dev ) {
 			sameFS = true;
-
-			if (newFileStats.st_ino == oldFileStats.st_ino) {
-				// source and dest are the same
+			if (newFileStats.st_ino == oldFileStats.st_ino)
+				/* source and dest are the same */
 				return 0;
-			}
 		}
 
 		if (!(newFileStats.st_mode & S_IFREG)) {
 			cerr << g_progname << ": " << newFile << ": Not a regular file" << endl;
 			return 2;
 		} else {
-			// overwrite?
+			/* overwrite? */
 			if (access(newFile, W_OK) != 0) {
 				cerr << g_progname << ": " <<  newFile << ": Permission denied" << endl;
 				return 2;
 			} else if (!overwrite) {
-				// have to ask the user if he wants to overwrite the file
+				/* have to ask the user if he wants to overwrite the file */
 				if (!confirm_overwrite(newFile)) {
 					return 0;
 				}
@@ -234,13 +227,13 @@ int MP3File::organize(const char *pattern, bool move, bool overwrite, struct tim
 	}
 
 	if (move && sameFS) {
-		// simply rename the file
+		/* simply rename the file */
 		if (rename(oldFile, newFile) != 0) {
 			cerr << g_progname << ": " << oldFile << ": Could not rename file to: " << newFile << endl;
 			return 2;
 		}
 	} else {
-		// copy file to new position
+		/* copy file to new position */
 		FILE *outFile = fopen(newFile, "w+");
 		if (outFile == NULL) {
 			cerr << g_progname << ": " << newFile << ": Could not open file for writing" << endl;
@@ -255,38 +248,44 @@ int MP3File::organize(const char *pattern, bool move, bool overwrite, struct tim
 
 		bool writeOK = true;
 		char *buf = (char*) s_malloc(FILE_BUF_SIZE);
+		int icnt, ocnt;
 
-		// copy content of inFile to outFile
+		/* copy content of inFile to outFile */
 		while (!feof(inFile) && writeOK) {
-			fread(buf, FILE_BUF_SIZE, 1, inFile);
+			icnt = fread(buf, 1, FILE_BUF_SIZE, inFile);
 			if (ferror(inFile)) {
 				cerr << g_progname << ": " << oldFile << ": Error reading file" << endl;
 				writeOK = false;
 			} else {
-				fwrite(buf, FILE_BUF_SIZE, 1, outFile);
-				if (ferror(outFile)) {
-					cerr << g_progname << ": " << newFile << ": Error writing file" << endl;
-					writeOK = false;
+				ocnt = 0;
+				while (ocnt < icnt) {
+					ocnt += fwrite(buf + ocnt, 1, icnt - ocnt, outFile);
+					if (ferror(outFile)) {
+						cerr << g_progname << ": " << newFile << ": Error writing file" << endl;
+						writeOK = false;
+						break;
+					}
 				}
 			}
 		}
 
 		fclose(inFile);
 		fclose(outFile);
-
 		free(buf);
 		
 		if (writeOK) {
-			// delete original if user requested to move the file:
-			if (move) unlink(oldFile);
+			/* delete original if user requested to move the file */
+			if (move)
+				unlink(oldFile);
 		} else {
 			unlink(newFile);
 			return 2;
 		}
 	}
 
-	// apply access and modification times of original file to the new one:
-	if (times != NULL) utimes(newFile, times);
+	/* apply access and modification times of original file to the new one */
+	if (ptimes != NULL)
+		utimes(newFile, ptimes);
 
 	return 0;
 }

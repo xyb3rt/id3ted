@@ -22,7 +22,7 @@
 
 #include "frametable.h"
 
-FrameTable::frame_table_entry_t FrameTable::_table[] = {
+FrameTable::FrameTableEntry FrameTable::_table[] = {
 	{ "XXXX", FID3_XXXX, "Unknown frame" },
 	{ "AENC", FID3_AENC, "Audio encryption" },
 	{ "APIC", FID3_APIC, "Attached picture" },
@@ -117,7 +117,7 @@ FrameTable::frame_table_entry_t FrameTable::_table[] = {
 	{ "WPUB", FID3_WPUB, "Publishers official webpage" },
 	{ "WXXX", FID3_WXXX, "User defined URL link frame" },
 };
-int FrameTable::_tableSize = sizeof(_table) / sizeof(frame_table_entry_t);
+int FrameTable::_tableSize = sizeof(_table) / sizeof(FrameTableEntry);
 
 const char* FrameTable::frameDescription(const char *textFrameID) {
 	int a = 0, b = _tableSize;
@@ -157,7 +157,7 @@ ID3v2FrameID FrameTable::frameID(const char *textFrameID) {
 
 const char* FrameTable::textFrameID(ID3v2FrameID frameID) {
 	int a = 0, b = _tableSize;
-	int i, cmp;
+	int i;
 
 	while (a <= b) {
 		i = (a + b) / 2;

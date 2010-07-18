@@ -85,9 +85,9 @@ bool APICFrameInfo::applyTo(MP3File &mp3File) {
 	TagLib::ID3v2::AttachedPictureFrame *apf = NULL;
 	bool alreadyIn = false;
 
-	ID3v2::FrameList::ConstIterator it = frameList.begin();
-	for (; it != frameList.end() && !alreadyIn; it++) {
-		apf = dynamic_cast<ID3v2::AttachedPictureFrame*>(*it);
+	ID3v2::FrameList::ConstIterator fl_it = frameList.begin();
+	for (; fl_it != frameList.end() && !alreadyIn; fl_it++) {
+		apf = dynamic_cast<ID3v2::AttachedPictureFrame*>(*fl_it);
 		if (apf == NULL) continue;
 		alreadyIn = _picture == apf->picture();
 	}
@@ -114,9 +114,9 @@ void MP3File::extractAPICs(bool overwrite) const {
 	FILE *fptr;
 	
 	ID3v2::FrameList apicList = _id3v2Tag->frameListMap()["APIC"];
-	ID3v2::FrameList::ConstIterator it = apicList.begin();
-	for (; it != apicList.end() && picNum <= 20; it++) {
-		ID3v2::AttachedPictureFrame *apf = dynamic_cast<ID3v2::AttachedPictureFrame*>(*it);
+	ID3v2::FrameList::ConstIterator fl_it = apicList.begin();
+	for (; fl_it != apicList.end() && picNum <= 20; fl_it++) {
+		ID3v2::AttachedPictureFrame *apf = dynamic_cast<ID3v2::AttachedPictureFrame*>(*fl_it);
 		if (apf == NULL) continue;
 		picNum++;
 

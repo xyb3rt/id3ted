@@ -41,7 +41,7 @@ MP3File::MP3File(const char *filename) :
 
 void MP3File::createID3v2Tag() {
 	if (_file.isValid() && !_file.readOnly()) {
-		_id3v2Tag == _file.ID3v2Tag(true);
+		_id3v2Tag = _file.ID3v2Tag(true);
 		_tags |= 2;
 	}
 }

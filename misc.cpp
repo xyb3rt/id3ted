@@ -90,7 +90,8 @@ const char* basename(const char *string) {
       // looping back to next slash or beginning of string
       while (*(--res) != '/' && len + new_len < str_len) new_len++;
       if (buf_size < new_len + 1) {
-        if (buf != NULL) free(buf);
+        if (buf != NULL)
+					free(buf);
         buf = (char*) s_malloc(new_len + 1);
         buf_size = new_len + 1;
       }
@@ -200,7 +201,8 @@ const char* getMimeType(const char *file) {
 			if (mttemp != NULL)
 				mtlen = mttemp - mimetype;
 			if (mtlen + 1 > buf_size) {
-				if (buf != NULL) free(buf);
+				if (buf != NULL)
+					free(buf);
 				buf = (char*) s_malloc(mtlen + 1);
 				buf_size = mtlen + 1;
 			}
@@ -237,7 +239,8 @@ int creat_dir_r(const char *path) {
 	strcpy(directory, path);
 	while (curr != NULL && ret == 0) {
 		curr = strchr(curr + 1, '/');
-		if (curr != NULL) *curr = '\0';
+		if (curr != NULL)
+			*curr = '\0';
 		if (access(directory, F_OK) != 0 && errno == ENOENT) {
 			if (mkdir(directory, 0755) != 0) {
 				cerr << g_progname << ": " << directory << ": Could not create directory" << endl;
@@ -264,9 +267,8 @@ bool confirm_overwrite(const char *filename) {
 	while (1) {
 		cout << "overwrite " << filename << "? [yN] ";
 		userIn = fgets(buf, 10, stdin);
-		if (userIn == NULL) {
+		if (userIn == NULL)
 			continue;
-		}
 		if (strcmp(buf, "\n") == 0 || strcmp(buf, "n\n") == 0 || strcmp(buf, "N\n") == 0) {
 			break;
 		} else if (strcmp(buf, "y\n") == 0 || strcmp(buf, "Y\n") == 0) {

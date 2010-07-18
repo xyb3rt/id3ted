@@ -20,8 +20,8 @@
  *   http://gabriel.mp3-tech.org/mp3infotag.html
  *
  * other open source implementations:
- * - LameTag by phwip, http://phwip.wordpress.com/home/audio/
- * - MAD, http://www.underbit.com/products/mad/ (madplay/tag.c)
+ *   - LameTag by phwip, http://phwip.wordpress.com/home/audio/
+ *   - MAD, http://www.underbit.com/products/mad/ (madplay/tag.c)
  */
 
 #include <cstdlib>
@@ -45,7 +45,6 @@ double replayGain(const ByteVector &gainData, bool oldVersion) {
 
 	if (gainData[0] & 0x02)
 		value *= -1;
-
 	if (oldVersion)
 		value += 6;
 
@@ -326,7 +325,7 @@ void MP3File::printLameTag(bool checkCRC) {
 
 	printf("%-15s: ", "album gain");
 	gain = replayGain(lameTag.mid(17, 2), oldVersion);
-	printf("%s%.1lf dB", (gain > 0.0 ? "+" : ""), gain);
+	printf("%s%.1f dB", (gain > 0.0 ? "+" : ""), gain);
 	cout << endl;
 }
 

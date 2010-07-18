@@ -24,13 +24,13 @@
 
 class FrameTable {
 	private:
-		typedef struct frame_table_entry {
+		typedef struct _FrameTableEntry {
 			const char *id;
 			ID3v2FrameID fid;
 			const char *description;
-		} frame_table_entry_t;
+		} FrameTableEntry;
 		
-		static frame_table_entry_t _table[];
+		static FrameTableEntry _table[];
 		static int _tableSize;
 	
 	public:

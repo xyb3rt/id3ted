@@ -30,9 +30,9 @@ GenericInfo::GenericInfo(const char id, const char *value) :
 			_id(id), _value(value) {}
 
 bool GenericInfo::sameIDIn(const std::vector<GenericInfo*> &list) {
-	std::vector<GenericInfo*>::const_iterator it = list.begin();
-	for (; it != list.end(); it++) {
-		if (this->_id == (*it)->_id) return true;
+	std::vector<GenericInfo*>::const_iterator gi_it = list.begin();
+	for (; gi_it != list.end(); gi_it++) {
+		if (this->_id == (*gi_it)->_id) return true;
 	}
 
 	return false;
@@ -42,9 +42,9 @@ FrameInfo::FrameInfo(const char *id, ID3v2FrameID fid, const char *value, unsign
 			_id(id), _fid(fid), _value(value, DEF_TSTR_ENC), _fPathIdx(fPathIdx) {}
 
 bool FrameInfo::sameFIDIn(const std::vector<FrameInfo*> &list) {
-	std::vector<FrameInfo*>::const_iterator it = list.begin();
-	for (; it != list.end(); it++) {
-		if (this->_fid == (*it)->_fid) return true;
+	std::vector<FrameInfo*>::const_iterator fi_it = list.begin();
+	for (; fi_it != list.end(); fi_it++) {
+		if (this->_fid == (*fi_it)->_fid) return true;
 	}
 
 	return false;
@@ -103,8 +103,8 @@ bool FrameInfo::applyTo(MP3File &mp3File) {
 APICFrameInfo::APICFrameInfo(const char *id, ID3v2FrameID fid, const char *value, unsigned int fPathIdx) :
 			FrameInfo(id, fid, value, fPathIdx), _mimetype(), _picture(), _fileRead(false), _readError(false) {}
 
-// implementation of APICFrameInfo::readFile() in apic.cpp
-// implementation of APICFrameInfo::applyTo() in apic.cpp
+/* implementation of APICFrameInfo::readFile() in apic.cpp */
+/* implementation of APICFrameInfo::applyTo() in apic.cpp */
 
 TDFrameInfo::TDFrameInfo(const char *id, ID3v2FrameID fid, const char *value, unsigned int fPathIdx) :
 			FrameInfo(id, fid, value, fPathIdx), _text(), _description(), _multipleFields(false) {
@@ -135,31 +135,31 @@ bool TDFrameInfo::applyTo(MP3File &mp3File) {
 	ID3v2::UserUrlLinkFrame *uulf;
 	ID3v2::UserTextIdentificationFrame *utif;
 
-	// looking for a frame with the same type and description
-	// found it -> overwrite it:
-	ID3v2::FrameList::ConstIterator it = frameList.begin();
-	while (it != frameList.end()) {
+	/* looking for a frame with the same type and description
+	   found it -> overwrite it: */
+	ID3v2::FrameList::ConstIterator fl_it = frameList.begin();
+	while (fl_it != frameList.end()) {
 		if (_fid == FID3_TXXX) {
-			if ((utif = dynamic_cast<ID3v2::UserTextIdentificationFrame*>(*it)) == NULL) continue;
+			if ((utif = dynamic_cast<ID3v2::UserTextIdentificationFrame*>(*fl_it)) == NULL) continue;
 			alreadyIn = _description == utif->description();
 		} else {
-			if ((uulf = dynamic_cast<ID3v2::UserUrlLinkFrame*>(*it)) == NULL) continue;
+			if ((uulf = dynamic_cast<ID3v2::UserUrlLinkFrame*>(*fl_it)) == NULL) continue;
 			alreadyIn = _description == uulf->description();
 		}
 
 		if (alreadyIn) {
 			if (textLength > 0) {
-				(*it)->setText(_text);
+				(*fl_it)->setText(_text);
 			} else {
-				id3v2Tag->removeFrame(*it);
+				id3v2Tag->removeFrame(*fl_it);
 			}
 			break;
 		}
-		it++;
+		fl_it++;
 	}
 			
-	// no frame with the same type, description and language
-	// have to add a new one:
+	/* no frame with the same type, description and language
+	   have to add a new one: */
 	if (!alreadyIn && textLength > 0) {
 		if (_fid == FID3_TXXX) {
 			utif = new ID3v2::UserTextIdentificationFrame(DEF_TSTR_ENC);
@@ -207,18 +207,18 @@ bool TDLFrameInfo::applyTo(MP3File &mp3File) {
 	ID3v2::CommentsFrame *cf;
 	ID3v2::UnsynchronizedLyricsFrame *ulf;
 
-	// looking for a frame with the same type, description and language
-	// found it -> overwrite it:
-	ID3v2::FrameList::ConstIterator it = frameList.begin();
-	while (it != frameList.end()) {
+	/* looking for a frame with the same type, description and language
+	   found it -> overwrite it: */
+	ID3v2::FrameList::ConstIterator fl_it = frameList.begin();
+	while (fl_it != frameList.end()) {
 		if (_fid == FID3_COMM) {
-			if ((cf = dynamic_cast<ID3v2::CommentsFrame*>(*it)) == NULL) continue;
+			if ((cf = dynamic_cast<ID3v2::CommentsFrame*>(*fl_it)) == NULL) continue;
 			if (cf->language().isNull() || cf->language().isEmpty()) {
 				cf->setLanguage("XXX");
 			}
 			alreadyIn = _description == cf->description() && _language == cf->language();
 		} else {	
-			if ((ulf = dynamic_cast<ID3v2::UnsynchronizedLyricsFrame*>(*it)) == NULL) continue;
+			if ((ulf = dynamic_cast<ID3v2::UnsynchronizedLyricsFrame*>(*fl_it)) == NULL) continue;
 			if (ulf->language().isNull() || ulf->language().isEmpty()) {
 				ulf->setLanguage("XXX");
 			}
@@ -227,17 +227,17 @@ bool TDLFrameInfo::applyTo(MP3File &mp3File) {
 
 		if (alreadyIn) {
 			if (textLength > 0) {
-				(*it)->setText(_text);
+				(*fl_it)->setText(_text);
 			} else {
-				id3v2Tag->removeFrame(*it);
+				id3v2Tag->removeFrame(*fl_it);
 			}
 			break;
 		}
-		it++;
+		fl_it++;
 	}
 
-	// no frame with the same type, description and language
-	// have to add a new one:
+	/* no frame with the same type, description and language
+	   have to add a new one: */
 	if (!alreadyIn && textLength > 0) {
 		if (_fid == FID3_COMM) {
 			cf = new ID3v2::CommentsFrame(DEF_TSTR_ENC);
