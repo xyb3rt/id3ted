@@ -1,3 +1,7 @@
+id3ted v0.7.3 -- August 14, 2010
+ * Updated documentation and helper files
+ * Moved the project from sourceforge to github
+
 id3ted v0.7.2 -- July 18, 2010
  * Changed command line options, e.g. -e/-E => -m/-M, -F => -f;
    help screen got restructured, command line options arranged in categories
@@ -82,3 +86,4 @@ id3ted v0.2 -- October 14, 2007
 id3ted v0.1 -- September 29, 2007
  * Initial release
  * Based on id3v2 by Myers Carpenter
+

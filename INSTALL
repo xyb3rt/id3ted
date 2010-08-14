@@ -1,38 +1,46 @@
-TO INSTALL:
------------
+BUILDING
+--------
 First make sure that taglib and file (libmagic) are installed.
-If they are not, download them here:
-	- http://developer.kde.org/~wheeler/taglib/
-	- ftp://ftp.astron.com/pub/file/
+Otherwise, check if your system offers binary and devel packages for them.
+If it does not, download them here:
+    http://developer.kde.org/~wheeler/taglib/
+    ftp://ftp.astron.com/pub/file/
 and then build and install them.
 
-Use "make" to build id3ted, and then install it by running "make install"
-with root priveleges.
+Use the following commands to build and install id3ted:
 
-The default prefix for the installation is /usr/local. So id3ted is installed
-in /usr/local/bin. You can install it in any other directory by specifying
-your own prefix:
-    type "make PREFIX=/your/install/path install" as root
+    $ make
+		# make install
 
-Linux users should use the "Makefile.linux" instead of the default "Makefile".
-Mac OS X users should use the "Makefile.macosx".
+Please notice, that the second command needs root priveleges.
 
-Please make sure that the CXXFLAGS variable contains -I entries for the
+The default prefix for the installation is /usr/local. Replace the second
+command with the following, to use a directory of your choice:
+
+    # make PREFIX=/your/install/path install
+
+The default Makefile should work on almost any *NIX system. There is also
+an alternative Makefile for Darwin & Mac OS X: Makefile.darwin.
+This one also looks into the installation directories of the two most common
+port systems -- MacPorts and Fink -- when looking for TagLib and File/Magic.
+
+Please make sure that the CFLAGS variable contains "-I" entries for the
 include directories of taglib and file. The LDFLAGS variable has to contain
--L entries for the lib directories of taglib and file.
-(see the gcc manpage for more details)
+"-L" entries for the lib directories of taglib and file.
+Please have a look at the gcc manpage for more details.
 
 After the installation you can type "id3ted --help" for getting information
 on how to use it.
 
-PREPROCESSOR VARIABLES:
------------------------
+PREPROCESSOR VARIABLES
+----------------------
 The following preprocessor variables are used to control the build process of
-id3ted. You can define them by adding -D entries to the CXXFLAGS variable.
-(see the gcc manpage for more details)
+id3ted. You can define them by adding -D entries to the CFLAGS variable.
+Please have a look at the gcc manpage for more details.
 
 NO_STR_BASENAME: Use own implementation of the basename function.
 Required if your C string library does not contain it.
 
 DISABLE_UTF8: Prevent id3ted from using UTF-8 as the default encoding for
-filenames and id3 tags. Useful if your system did not support or use UTF-8.
+filenames and id3 tags. Useful if your system does not support or use UTF-8.
+

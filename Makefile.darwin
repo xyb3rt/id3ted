@@ -3,8 +3,8 @@ all: id3ted
 CC=g++
 PREFIX?=/usr/local
 # see INSTALL for available preprocessor variables
-CFLAGS+= -I$(PREFIX)/include -I/opt/local/include -Wall -pedantic -DNO_STR_BASENAME
-LDFLAGS+= -L$(PREFIX)/lib -L/opt/local/lib -ltag -lmagic
+CFLAGS+= -I$(PREFIX)/include -I/opt/local/include -I/sw/include -Wall -pedantic -DNO_STR_BASENAME
+LDFLAGS+= -L$(PREFIX)/lib -L/opt/local/lib -L/sw/lib -ltag -lmagic
 
 CPPFILES=$(wildcard *.cpp)
 OBJFILES=$(CPPFILES:.cpp=.o)
