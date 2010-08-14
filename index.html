@@ -9,9 +9,10 @@
 		<h2>id3ted</h2>
 		... is a command line id3 tag editor.<br>
 		It's written in C++, uses <a href="http://developer.kde.org/~wheeler/taglib/">TagLib</a> by Scott Wheeler and should compile on any UNIX-flavoured operating system.
+
 		<h3>Features</h3>
 		The primary goal for writing id3ted was the aim to support all featues of the id3v2 tag format. When listing id3 tags, for instance, id3ted shows every tag information found in the files, it did not hide obscure id3v2 frame types for user's convenience. It also regards the additional description and language fields belonging to some frame types, when reading or writing id3v2 tags.<br>
-		Here's an overview of id3ted's capabilites:
+		Here's an overview of id3ted's features:
 		<ul>
 			<li>List complete id3 tag information saved in mp3 files, in full detail</li>
 			<li>Convert id3v1 to id3v2 tag and vice versa</li>
@@ -23,82 +24,98 @@
 			<li>Extract and add attached pictures from/to id3v2 tag</li>
 			<li>Print LAME tags and verify their checksums</li>
 		</ul>
-		<a href="http://www.sf.net/projects/id3ted/">sourceforge project page</a>
+
+		<h3>Installation</h3>
+		<h5>Dependencies</h5>
+		First of all, make sure that the following libraries are installed on your system:
+		<ul>
+			<li>TagLib: <a href="http://developer.kde.org/~wheeler/taglib/">http://developer.kde.org/~wheeler/taglib/</a></li>
+			<li>File/Magic: <a href="ftp://ftp.astron.com/pub/file/">ftp://ftp.astron.com/pub/file/</a></li>
+		</ul>
+		They are both quite popular, most Linux distributions offer binary and devel packages for them.
+
+		<h5>Building</h5>
+		id3ted uses the common <tt>make</tt> and <tt>make install</tt> procedure.<br><br>
+		The default Makefile should work on most *NIX systems. There is also an alternative Makefile for Darwin &amp; Mac OS X: Makefile.darwin. This one also looks into the installation directories of the two most common port systems -- MacPorts and Fink -- when looking for TagLib and File/Magic.<br><br>
+		The default installation directory of id3ted is <tt>/usr/local</tt>. You could also use an alternative, by installing id3ted with the following command line:
+		<blockquote><tt>make PREFIX="/your/install/path" install</tt></blockquote>
+		Please also have a look at the INSTALL file for available preprocessor variables, which alter the compilation and disable features of id3ted.
+
 		<h3>Download</h3>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.7.2.tar.gz">id3ted v0.7.2</a></b> -- <i>July 18, 2010</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.7.2.tar.gz">id3ted v0.7.2</a></b> -- <i>July 18, 2010</i>
 		<ul>
 			<li>Changed command line options, e.g. <tt>-e/-E</tt> &rarr; <tt>-m/-M</tt>, <tt>-F</tt> &rarr; <tt>-f</tt>; help screen got restructured, command line options arranged in categories</li>
 			<li>Bug fix: Segmentation fault when using -r with invalid frame id</li>
 			<li>Bug fix: Padding files with junk when organizing them (copying)</li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.7.1.tar.gz">id3ted v0.7.1</a></b> -- <i>March 10, 2010</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.7.1.tar.gz">id3ted v0.7.1</a></b> -- <i>March 10, 2010</i>
 		<ul>
 			<li>Bug fix: Build error caused by using strstr() with wrong return type</li>
 			<li>Created a <a href="http://aur.archlinux.org/packages.php?ID=35357">PKGBUILD</a></li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.7.tar.gz">id3ted v0.7</a></b> -- <i>January 13, 2010</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.7.tar.gz">id3ted v0.7</a></b> -- <i>January 13, 2010</i>
 		<ul>
 			<li>New options: <tt>-e/-E</tt>, print the LAME tags stored in the files. Using <tt>-E</tt> additionally verifies their CRC checksums.</li>
 			<li>Bug fix: Handle backslashes in <tt>-n</tt> patterns and parenthesized subexpressions in <tt>-N</tt> patterns correctly</li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.6.3.tar.gz">id3ted v0.6.3</a></b> -- <i>October 31, 2009</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.6.3.tar.gz">id3ted v0.6.3</a></b> -- <i>October 31, 2009</i>
 		<ul>
 			<li>Bug fix: Infinite loop when creating new APIC frames</li>
 			<li>Strip off additional information from mimetype fields of newly created APIC frames</li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.6.2.tar.gz">id3ted v0.6.2</a></b> -- <i>September 30, 2009</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.6.2.tar.gz">id3ted v0.6.2</a></b> -- <i>September 30, 2009</i>
 		<ul>
 			<li>Bug fix: Creating extended id3v2 frames (APIC, COMM, TXXX, etc.) as simple ones, cutting off their additional information (picture data, description fields, etc.)</li>
 	 	</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.6.1.tar.gz">id3ted v0.6.1</a></b> -- <i>September 24, 2009</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.6.1.tar.gz">id3ted v0.6.1</a></b> -- <i>September 24, 2009</i>
 		<ul>
 			<li>New options: <tt>-n/-N</tt>, parse filepaths using given pattern with wildcards and auto-apply the matches for these wildcards to their corresponding tag frames. Both options act the same, except that the pattern of <tt>-N</tt> is interpreted as an extended regular expression.</li>
 			<li>Bug fix: Resetting access and modification times of files using their original path after moving them</li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.6.tar.gz">id3ted v0.6</a></b> -- <i>March 27, 2009</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.6.tar.gz">id3ted v0.6</a></b> -- <i>March 27, 2009</i>
 		<ul>
 			<li>New option: <tt>-p</tt>, preserve access and modification times of the files</li>
 			<li>Organizing files much faster when moving them and source and destination reside on the same filesystem</li>
 			<li>Bug fix: Bus error if first percent sign in organize pattern is followed by an invalid wildcard</li>
 			<li>Improved support for building id3ted on common linux distributions</li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.5.1.tar.gz">id3ted v0.5.1</a></b> -- <i>August 24, 2008</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.5.1.tar.gz">id3ted v0.5.1</a></b> -- <i>August 24, 2008</i>
 		<ul>
 			<li>Bug fix: handle PRIV frames correctly</li>
 			<li>Print the size of APICs in a human readable way using unit suffixes like Kilobyte and Megabyte</li>
 			<li>Regard linebreaks when printing USLT frames</li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.5.tar.gz">id3ted v0.5</a></b> -- <i>August 10, 2008</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.5.tar.gz">id3ted v0.5</a></b> -- <i>August 10, 2008</i>
 		<ul>
 			<li>Support for UTF-8, using it per default</li>
 			<li>Ask for confirmation when extracting APIC and file already exists</li>
 			<li>New option: <tt>-o</tt>, organizing files into directory structure given by pattern, ability to replace wildcards in that pattern with information found in the tags. For instance, you can move some files to <tt>%a/%t.mp3</tt> with <tt>%a</tt> as a placeholder for the artist information and <tt>%t</tt> for the title.</li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.4.tar.gz">id3ted v0.4</a></b> -- <i>April 15, 2008</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.4.tar.gz">id3ted v0.4</a></b> -- <i>April 15, 2008</i>
 		<ul>
 			<li>Completely rewritten</li>
 			<li>Using <a href="http://developer.kde.org/~wheeler/taglib/">TagLib</a> as the new base instead of id3lib, because it is not so buggy and it supports version 2.4 tags</li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.3.2.tar.gz">id3ted v0.3.2</a></b> -- <i>March 24, 2008</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.3.2.tar.gz">id3ted v0.3.2</a></b> -- <i>March 24, 2008</i>
 		<ul>
 			<li>Support for TSOA, TSOP and TSOT frames in v2.3 tag</li>
 			<li>Bug fix: not ignoring the version 1 tag anymore when setting the comment information</li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.3.1.tar.gz">id3ted v0.3.1</a></b> -- <i>December 9, 2007</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.3.1.tar.gz">id3ted v0.3.1</a></b> -- <i>December 9, 2007</i>
 		<ul>
 			<li>Check only for the minimal permissions on the files, regarding the options given on the command line. Do not check for write permission (and abort if not granted) anymore, not regarding that id3ted only needs to read the files.</li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.3.tar.gz">id3ted v0.3</a></b> -- <i>November 25, 2007</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.3.tar.gz">id3ted v0.3</a></b> -- <i>November 25, 2007</i>
 		<ul>
 			<li>Dropped the <tt>-C</tt> option because it's effect could be achieved with the <tt>-1</tt>, <tt>-2</tt> and <tt>-3</tt> options in a slightly better way</li>
 			<li>I've always wanted to announce an update like Apple did it all the time: <i>improvements in speed and stability, bug fixes</i></li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.2.tar.gz">id3ted v0.2</a></b> -- <i>October 14, 2007</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.2.tar.gz">id3ted v0.2</a></b> -- <i>October 14, 2007</i>
 		<ul>
 			<li>New option: <tt>-d</tt> to set the delimiter used to distinguish the components of a multiple field option argument. This is helpful if for instance the description for the new comment contains a '<tt>:</tt>'.</li>
 			<li>Added support to list some more frame types</li>
 		</ul>
-		<b><a href="http://downloads.sourceforge.net/id3ted/id3ted-0.1.tar.gz">id3ted v0.1</a></b> -- <i>September 29, 2007</i>
+		<b><a href="http://github.com/downloads/muennich/id3ted/id3ted-0.1.tar.gz">id3ted v0.1</a></b> -- <i>September 29, 2007</i>
 		<ul>
 			<li>Initial release</li>
 			<li>Based on <a href="http://id3v2.sourceforge.net/">id3v2</a> by Myers Carpenter</li>
