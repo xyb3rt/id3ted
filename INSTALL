@@ -24,7 +24,7 @@ an alternative Makefile for Darwin & Mac OS X: Makefile.darwin.
 This one also looks into the installation directories of the two most common
 port systems -- MacPorts and Fink -- when looking for TagLib and File/Magic.
 
-Please make sure that the CFLAGS variable contains "-I" entries for the
+Please make sure that the CXXFLAGS variable contains "-I" entries for the
 include directories of taglib and file. The LDFLAGS variable has to contain
 "-L" entries for the lib directories of taglib and file.
 Please have a look at the gcc manpage for more details.
@@ -35,7 +35,7 @@ on how to use it.
 PREPROCESSOR VARIABLES
 ----------------------
 The following preprocessor variables are used to control the build process of
-id3ted. You can define them by adding -D entries to the CFLAGS variable.
+id3ted. You can define them by adding -D entries to the CXXFLAGS variable.
 Please have a look at the gcc manpage for more details.
 
 NO_STR_BASENAME: Use own implementation of the basename function.
