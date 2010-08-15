@@ -24,7 +24,7 @@
 #include <taglib/taglib.h>
 
 #define PROGNAME "id3ted"
-#define VERSION  "0.7.3"
+#define VERSION  "git-20100815"
 
 #define FILE_BUF_SIZE 4096
 #define FIELD_DELIM ':'
