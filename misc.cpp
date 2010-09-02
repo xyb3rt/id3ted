@@ -149,7 +149,7 @@ void printUsage() {
 	     << "  -l, --list             list the tags on the files\n"
 	     << "  -L, --list-wd          same as -l, but list id3v2 frames with description\n"
 	     << "  -m, --lame-tag         print the lame tags of the files\n"
-	     << "  -M, --lame-tag-crc     same as -e, but verify CRC checksums (slower)\n\n"
+	     << "  -M, --lame-tag-crc     same as -m, but verify CRC checksums (slower)\n\n"
 	     << "To remove tags & specify which tag version(s) to write:\n"
 	     << "  -r, --remove FID       remove all id3v2 frames with the given frame id\n"
 	     << "  -D, --delete-all       delete both id3v1 and id3v2 tag\n"
