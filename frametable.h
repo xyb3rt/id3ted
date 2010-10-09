@@ -37,7 +37,8 @@ class FrameTable {
 		static const char* frameDescription(const char*);
 		static ID3v2FrameID frameID(const char*);
 		static const char* textFrameID(ID3v2FrameID);
-		static void printFrameHelp();
+		static void listFrames();
+		static void listGenres();
 };
 
 #endif /* __FRAMETABLE_H__ */

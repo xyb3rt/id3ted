@@ -18,7 +18,10 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
+
+#include <taglib/id3v1genres.h>
 
 #include "frametable.h"
 
@@ -172,7 +175,7 @@ const char* FrameTable::textFrameID(ID3v2FrameID frameID) {
 	return _table[0].id;
 }
 
-void FrameTable::printFrameHelp() {
+void FrameTable::listFrames() {
 	for (int i = 1; i < _tableSize; i++) {
 		switch (_table[i].fid) {
 			case FID3_AENC:
@@ -218,5 +221,12 @@ void FrameTable::printFrameHelp() {
 	cout << "\n"
 	     << "(*): Frame with write support: You can use the 4-letter frame ID as a\n"
 	     << "     long option to set the content of the frame to the option argument." << endl;
+}
+
+void listGenres() {
+	for (uint i = 0; i < ID3v1::genreList().size(); i++) {
+		printf("  %5d: ", i);
+		cout << ID3v1::genre(i) << endl;
+	}
 }
 
