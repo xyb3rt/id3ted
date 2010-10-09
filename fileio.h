@@ -1,4 +1,4 @@
-/* id3ted: file.h
+/* id3ted: fileio.h
  * Copyright (c) 2010 Bert Muennich <muennich at informatik.hu-berlin.de>
  *
  * This program is free software; you can redistribute it and/or
@@ -17,23 +17,26 @@
  * USA.
  */
 
-#ifndef __FILE_H__
-#define __FILE_H__
+#ifndef __FILEIO_H__
+#define __FILEIO_H__
 
 #include <cstdio>
 #include <taglib/tbytevector.h>
 
-class File {
+class FileIO {
 	public:
 #ifdef NO_STR_BASENAME
 		static const char* basename(const char*);
 #endif	
+		static bool exists(const char*);
+		static bool isReadable(const char*);
+		static bool isWritable(const char*);
 		static const char* mimetype(const char*);
 		static bool createDir(const char*);
 		static bool confirmOverwrite(const char*);
 
-		File(const char*, const char*);
-		virtual ~File() = 0;
+		FileIO(const char*, const char*);
+		virtual ~FileIO() = 0;
 
 		bool isOpen() { return _stream != NULL; }
 		int close();
@@ -46,21 +49,22 @@ class File {
 		const char *_mode;
 };
 
-class IFile : public File {
+class IFile : public FileIO {
 	public:
-		IFile(const char *path) : File(path, "r") {}
+		IFile(const char *path) : FileIO(path, "r") {}
 		~IFile() { if (_stream) close(); }
 
 		size_t read(char*, size_t);
 		size_t read(ByteVector&);
 };
 
-class OFile : public File {
+class OFile : public FileIO {
 	public:
-		OFile(const char *path) : File(path, "w+") {}
+		OFile(const char *path) : FileIO(path, "w+") {}
 		~OFile() { if (_stream) close(); }
 
-		size_t write(char*, size_t);
+		size_t write(const char*, size_t);
+		size_t write(const ByteVector&);
 };
 
-#endif /* __FILE_H__ */
+#endif /* __FILEIO_H__ */

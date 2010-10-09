@@ -3,13 +3,16 @@
 #include <iostream>
 #include <errno.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <magic.h>
 
+#include <taglib/tfile.h>
+
 #include "id3ted.h"
-#include "file.h"
+#include "fileio.h"
 
 #ifdef NO_STR_BASENAME
-const char* File::basename(const char *path) {
+const char* FileIO::basename(const char *path) {
 	static char* buffer = NULL;
 	static size_t bufferSize = 0;
 	int len, pathLen, newLen;
@@ -50,7 +53,19 @@ const char* File::basename(const char *path) {
 }
 #endif /* NO_STR_BASENAME */
 
-const char* File::mimetype(const char *file) {
+bool FileIO::exists(const char *path) {
+	return access(path, F_OK);
+}
+
+bool FileIO::isReadable(const char *path) {
+	return TagLib::File::isReadable(path);
+}
+
+bool FileIO::isWritable(const char *path) {
+	return TagLib::File::isWritable(path);
+}
+
+const char* FileIO::mimetype(const char *file) {
   static char *buffer = NULL;
   static size_t bufferSize = 0, len;
 	const char *mimetype = NULL, *mttemp;
@@ -78,7 +93,7 @@ const char* File::mimetype(const char *file) {
 	return mimetype;
 }
 
-bool File::createDir(const char *path) {
+bool FileIO::createDir(const char *path) {
 	char *directory = new char[strlen(path + 1)];
 	char *curr = directory;
 	struct stat stats;
@@ -107,7 +122,7 @@ bool File::createDir(const char *path) {
 	return error;
 }
 
-bool File::confirmOverwrite(const char *filename) {
+bool FileIO::confirmOverwrite(const char *filename) {
 	char *buffer = new char[10];
 	char *userIn;
 	bool ret = false;
@@ -130,7 +145,7 @@ bool File::confirmOverwrite(const char *filename) {
 	return ret;
 }
 
-File::File(const char *path, const char *mode) :
+FileIO::FileIO(const char *path, const char *mode) :
 		_stream(NULL), _path(path), _mode(mode) {
 	if (_path == NULL || _mode == NULL)
 		return;
@@ -142,7 +157,7 @@ File::File(const char *path, const char *mode) :
 	}
 }
 
-int File::close() {
+int FileIO::close() {
 	int error;
 
 	error = fclose(_stream);
@@ -183,6 +198,34 @@ size_t IFile::read(ByteVector &vector) {
 	
 	if (!ferror(_stream))
 		fseek(_stream, oldPos, SEEK_SET);
+
+	return cnt;
+}
+
+size_t OFile::write(const char *buffer, size_t size) {
+	size_t cnt = 0;
+
+	if (_stream == NULL)
+		return 0;
+
+	while (cnt < size && !ferror(_stream))
+		cnt += fwrite(buffer, 1, size - cnt, _stream);
+
+	return cnt;
+}
+
+size_t OFile::write(const ByteVector &vector) {
+	size_t cnt = 0, size;
+	const char *buffer;
+
+	if (_stream == NULL)
+		return 0;
+	
+	size = vector.size();
+	buffer = vector.data();
+
+	while (cnt < size && !ferror(_stream))
+		cnt += fwrite(buffer, 1, size - cnt, _stream);
 
 	return cnt;
 }
