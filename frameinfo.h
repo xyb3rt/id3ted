@@ -27,18 +27,6 @@
 
 class MP3File;
 
-class GenericInfo {
-	private:
-		const char _id;
-		const char *_value;
-
-	public:
-		GenericInfo(const char, const char*);
-		const char id() const { return _id; }
-		const char *value() const { return _value; }
-		bool sameIDIn(const std::vector<GenericInfo*>&);
-};
-
 class FrameInfo {
 	protected:
 		const char *_id;
