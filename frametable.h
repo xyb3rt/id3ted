@@ -20,6 +20,8 @@
 #ifndef __FRAMETABLE_H__
 #define __FRAMETABLE_H__
 
+#include <taglib/tstring.h>
+
 #include "id3ted.h"
 
 class FrameTable {
@@ -34,8 +36,8 @@ class FrameTable {
 		static int _tableSize;
 	
 	public:
-		static const char* frameDescription(const char*);
-		static ID3v2FrameID frameID(const char*);
+		static const char* frameDescription(const String&);
+		static ID3v2FrameID frameID(const String&);
 		static const char* textFrameID(ID3v2FrameID);
 		static void listFrames();
 		static void listGenres();

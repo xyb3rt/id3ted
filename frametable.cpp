@@ -122,54 +122,49 @@ FrameTable::FrameTableEntry FrameTable::_table[] = {
 };
 int FrameTable::_tableSize = sizeof(_table) / sizeof(FrameTableEntry);
 
-const char* FrameTable::frameDescription(const char *textFrameID) {
-	int a = 0, b = _tableSize;
-	int i, cmp;
+const char* FrameTable::frameDescription(const String &textFID) {
+	int a = 0, b = _tableSize, i;
 
 	while (a < b) {
 		i = (a + b) / 2;
-		cmp = strncmp(_table[i].id, textFrameID, 4);
-		if (!cmp)
+		if (textFID == _table[i].id)
 			return _table[i].description;
-		else if (cmp < 0)
-			a = i + 1;
-		else
+		else if (textFID < _table[i].id)
 			b = i - 1;
+		else
+			a = i + 1;
 	}
 
 	return _table[0].description;
 }
 
-ID3v2FrameID FrameTable::frameID(const char *textFrameID) {
-	int a = 0, b = _tableSize;
-	int i, cmp;
+ID3v2FrameID FrameTable::frameID(const String &textFID) {
+	int a = 0, b = _tableSize, i;
 
 	while (a < b) {
 		i = (a + b) / 2;
-		cmp = strcmp(_table[i].id, textFrameID);
-		if (!cmp)
+		if (textFID == _table[i].id)
 			return _table[i].fid;
-		else if (cmp < 0)
-			a = i + 1;
-		else
+		else if (textFID < _table[i].id)
 			b = i - 1;
+		else
+			a = i + 1;
 	}
 
 	return _table[0].fid;
 }
 
 const char* FrameTable::textFrameID(ID3v2FrameID frameID) {
-	int a = 0, b = _tableSize;
-	int i;
+	int a = 0, b = _tableSize, i;
 
 	while (a <= b) {
 		i = (a + b) / 2;
-		if (_table[i].fid == frameID)
+		if (frameID == _table[i].fid)
 			return _table[i].id;
-		else if (_table[i].fid < frameID)
-			a = i + 1;
-		else
+		else if (frameID < _table[i].fid)
 			b = i - 1;
+		else
+			a = i + 1;
 	}
 
 	return _table[0].id;
