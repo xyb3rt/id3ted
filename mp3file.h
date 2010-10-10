@@ -21,57 +21,44 @@
 #define __MP3FILE_H__
 
 #include <taglib/mpegfile.h>
+#include <taglib/id3v2frame.h>
 
 #include "id3ted.h"
-
-class GenericInfo;
-class FrameInfo;
-class APICFrameInfo;
-class TDFrameInfo;
-class TDLFrameInfo;
+#include "genericinfo.h"
+#include "lametag.h"
 
 class MP3File {
-	friend class FrameInfo;
-	friend class APICFrameInfo;
-	friend class TDFrameInfo;
-	friend class TDLFrameInfo;
-
-	private:
-		TagLib::MPEG::File _file;
-		TagLib::Tag *_id3Tag;
-		TagLib::ID3v1::Tag *_id3v1Tag;
-		TagLib::ID3v2::Tag *_id3v2Tag;
-
-		int _tags;
-
-		bool hasID3v2Tag() const { return _tags & 2; }
-		void createID3v2Tag();
-		bool listID3v1Tag() const;
-		bool listID3v2Tag(bool) const;
-
 	public:
-		explicit MP3File(const char*);
+		explicit MP3File(const char*, int, bool);
+		~MP3File();
 
 		bool isValid() const { return _file.isValid(); }
 		bool isReadOnly() const { return _file.readOnly(); }
-		static bool isReadable(const char *filename) { return TagLib::MPEG::File::isReadable(filename); }
-		static bool isWritable(const char *filename) { return TagLib::MPEG::File::isWritable(filename); }
 		const char* filename() const { return _file.name(); }
 
 		void apply(GenericInfo*);
+		void apply(ID3v2::Frame*);
 		void removeFrames(const char*);
-		bool save(int);
 		bool save();
 		bool strip(int);
 
 		void showInfo() const;
-		void listTags(bool) const;
-		void printLameTag(bool);
+		void listID3v1Tag() const;
+		void listID3v2Tag(bool) const;
+		void printLameTag(bool) const;
+
 		void extractAPICs(bool) const;
 
 		int filenameToTag(const char*);
-		int organize(const char*, bool = false, bool = false, struct timeval* = NULL) const;
+		int organize(const char*, bool = false, bool = false, struct timeval* = NULL);
+
+	private:
+		MPEG::File _file;
+		Tag *_id3Tag;
+		ID3v1::Tag *_id3v1Tag;
+		ID3v2::Tag *_id3v2Tag;
+		LameTag *_lameTag;
+		int _tags;
 };
 
 #endif /* __MP3FILE_H__ */
-
