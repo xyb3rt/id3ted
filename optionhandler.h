@@ -72,8 +72,6 @@ class OptionHandler {
 	private:
 		int split2(const char*, String&, String&);
 		int split3(const char*, String&, String&, String&);
-		bool alreadyIn(ID3v2::Frame*, vector<ID3v2::Frame*>&);
-		bool alreadyIn(GenericInfo*, vector<GenericInfo*>&);
 };
 
 #endif /* __OPTIONHANDLER_H__ */

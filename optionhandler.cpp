@@ -3,6 +3,7 @@
 
 #include <taglib/tbytevector.h>
 #include <taglib/attachedpictureframe.h>
+#include <taglib/commentsframe.h>
 #include <taglib/textidentificationframe.h>
 
 #include "fileio.h"
@@ -150,7 +151,6 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 		forceOverwrite(false), times(NULL), moveFiles(false)
 {
 	int opt;
-	vector<string> multOptWarning;
 
 	while (!error) {
 		optFrameID = FID3_XXXX;
@@ -185,7 +185,8 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 				if (strlen(optarg) == 1) {
 					fieldDelimiter = optarg[0];
 				} else {
-					cerr << command << ": The argument of -d/--delimiter has to be a single character" << endl;
+					cerr << command << ": The argument of -d/--delimiter "
+					     << "has to be a single character" << endl;
 					error = true;
 				}
 				break;
@@ -199,13 +200,8 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 			case 'y': {
 				GenericInfo *info = new GenericInfo((char) opt, optarg);
 				if (info != NULL) {
-					if (!alreadyIn(info, genericMods)) {
-						genericMods.push_back(info);
-						writeFile = true;
-					} else {
-						multOptWarning.push_back(std::string(1, opt));
-						delete info;
-					}
+					genericMods.push_back(info);
+					writeFile = true;
 				}
 				break;
 			}
@@ -419,7 +415,6 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 				ID3v2FrameID fid = (ID3v2FrameID) optFrameID;
 				const char *textFID = FrameTable::textFrameID(fid);
 				ID3v2::Frame *frame = NULL;
-				bool exclusiveFrame = false;
 
 				switch(fid) {
 					case FID3_XXXX: {
@@ -434,39 +429,92 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 							break;
 						mimetype = FileIO::mimetype(optarg);
 						if (strstr(mimetype, "image") == NULL) {
-							cerr << command << ": " << optarg << ": Wrong mime-type: " << mimetype << "! Not an image, not attached." << endl;
+							cerr << command << ": " << optarg << ": Wrong mime-type: "
+							     << mimetype << "! Not an image, not attached." << endl;
 							break;
 						}
 						file.read(picture);
-						if (!picture.isEmpty()) {
-							ID3v2::AttachedPictureFrame *apic = new ID3v2::AttachedPictureFrame();
+						if (!picture.isEmpty() && !file.error()) {
+							ID3v2::AttachedPictureFrame *apic =
+									new ID3v2::AttachedPictureFrame();
 							apic->setPicture(picture);
 							apic->setMimeType(mimetype);
 							frame = apic;
 						}
 						break;
 					}
-					case FID3_TXXX:
-					case FID3_WXXX:
-					case FID3_USLT:
-					case FID3_COMM:
-						// TODO
+					case FID3_COMM: {
+						String text;
+						String description;
+						String language;
+						split3(optarg, text, description, language);
+						if (!text.isEmpty()) {
+							ID3v2::CommentsFrame *comment =
+									new ID3v2::CommentsFrame(DEF_TSTR_ENC);
+							comment->setText(text);
+							if (!description.isEmpty())
+								comment->setDescription(description);
+							if (!language.isEmpty())
+								comment->setLanguage(language.data(DEF_TSTR_ENC));
+							frame = comment;
+						}
+						break;
+					}
+					case FID3_TXXX: {
+						String text;
+						String description;
+						split2(optarg, text, description);
+						if (!text.isEmpty()) {
+							ID3v2::UserTextIdentificationFrame *userText =
+									new ID3v2::UserTextIdentificationFrame(DEF_TSTR_ENC);
+							userText.setText(text);
+							if (!description.isEmpty())
+								userText.setDescription(description);
+							frame = userText;
+						}
+						break;
+					}
+					case FID3_USLT: {
+						String text;
+						String description;
+						String language;
+						split3(optarg, text, description, language);
+						if (!text.isEmpty()) {
+							ID3v2::CommentsFrame *uslt =
+									new ID3v2::UnsynchronisedLyricsFrame(DEF_TSTR_ENC);
+							uslt->setText(text);
+							if (!description.isEmpty())
+								uslt->setDescription(description);
+							if (!language.isEmpty())
+								uslt->setLanguage(language.data(DEF_TSTR_ENC));
+							frame = uslt;
+						}
+						break;
+					}
+					case FID3_WXXX: {
+						String text;
+						String description;
+						split2(optarg, text, description);
+						if (!text.isEmpty()) {
+							ID3v2::UserUrlLinkFrame *userUrl =
+									new ID3v2::UserUrlLinkFrame(DEF_TSTR_ENC);
+							userUrl.setText(text);
+							if (!description.isEmpty())
+								userUrl.setDescription(description);
+							frame = userUrl;
+						}
+						break;
+					}
 					default: {
 						frame = new ID3v2::TextIdentificationFrame(textFID, DEF_TSTR_ENC);
 						frame->setText(optarg);
-						exclusiveFrame = true;
 						break;
 					}
 				}
 			
 				if (frame != NULL) {
-					if (exclusiveFrame && alreadyIn(frame, framesToModify)) {
-						multOptWarning.push_back(textFID);
-						delete frame;
-					} else {
-						framesToModify.push_back(frame);
-						writeFile = true;
-					}
+					framesToModify.push_back(frame);
+					writeFile = true;
 				}
 				break;
 			}
@@ -478,7 +526,8 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 	if (!error) {
 		// check if given options are in conflict
 		if (tagsToStrip & tagsToWrite) {
-			cerr << command << ": conflicting options: strip and write the same tag version" << endl;
+			cerr << command << ": conflicting options: strip and write "
+			     << "the same tag version" << endl;
 			error = true;
 		}
 		if (tagsToWrite == 1 && framesToRemove.size() > 0) {
@@ -486,11 +535,13 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 			error = true;
 		}
 		if (tagsToWrite == 1 && framesToModify.size() > 0) {
-			cerr << command << ": conflicting options: -1, --" << framesToModify[0]->frameID() << endl;
+			cerr << command << ": conflicting options: -1, --"
+			     << framesToModify[0]->frameID() << endl;
 			error = true;
 		}
 		if (tagsToStrip & 2 && framesToModify.size() > 0) {
-			cerr << command << ": conflicting options: strip id3v2 tag, --" << framesToModify[0]->frameID() << endl;
+			cerr << command << ": conflicting options: strip id3v2 tag, --"
+			     << framesToModify[0]->frameID() << endl;
 			error = true;
 		}
 		// check for missing mandatory arguments
@@ -517,7 +568,9 @@ OptionHandler::~OptionHandler() {
 void OptionHandler::printVersion() {
 	cout << PROGNAME << " - command line id3 tag editor\n"
 	     << "Version " << VERSION << ", written by Bert Muennich\n"
-	     << "Uses TagLib v" << TAGLIB_MAJOR_VERSION << "." << TAGLIB_MINOR_VERSION << "." << TAGLIB_PATCH_VERSION << ", written by Scott Wheeler" << endl;
+	     << "Uses TagLib v" << TAGLIB_MAJOR_VERSION << "."
+	     << TAGLIB_MINOR_VERSION << "." << TAGLIB_PATCH_VERSION
+	     << ", written by Scott Wheeler" << endl;
 }
 
 void OptionHandler::printUsage() {
@@ -586,8 +639,8 @@ void OptionHandler::printUsage() {
 int OptionHandler::split2(const char *in, String &text, String &description) {
 	int idx, len;
 
-	text = in;
-	idx = text.find(fieldDelimiter, 0); 
+	text = String(in, DEF_TSTR_ENC);
+	idx = text.find(fieldDelimiter, 0);
 	if (idx != -1) {
 		len = idx++;
 		description = text.substr(idx, text.length() - len);
@@ -614,24 +667,4 @@ int OptionHandler::split3(const char *in, String &text, String &description,
 		ret = 2;
 	}
 	return ret;
-}
-
-bool OptionHandler::alreadyIn(ID3v2::Frame *frame, vector<ID3v2::Frame*> &list) {
-	vector<ID3v2::Frame*>::const_iterator each = list.begin();
-
-	for(; each != list.end(); ++each) {
-		if ((*each)->frameID() == frame->frameID())
-			return true;
-	}
-	return false;
-}
-
-bool OptionHandler::alreadyIn(GenericInfo *info, vector<GenericInfo*> &list) {
-	vector<GenericInfo*>::const_iterator each = list.begin();
-
-	for(; each != list.end(); ++each) {
-		if ((*each)->id() == info->id())
-			return true;
-	}
-	return false;
 }
