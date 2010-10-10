@@ -514,6 +514,7 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 			
 				if (frame != NULL) {
 					framesToModify.push_back(frame);
+					tagsToWrite |= 2;
 					writeFile = true;
 				}
 				break;
@@ -525,11 +526,6 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 
 	if (!error) {
 		// check if given options are in conflict
-		if (tagsToStrip & tagsToWrite) {
-			cerr << command << ": conflicting options: strip and write "
-			     << "the same tag version" << endl;
-			error = true;
-		}
 		if (tagsToWrite == 1 && framesToRemove.size() > 0) {
 			cerr << command << ": conflicting options: -1, -r" << endl;
 			error = true;
@@ -542,6 +538,11 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 		if (tagsToStrip & 2 && framesToModify.size() > 0) {
 			cerr << command << ": conflicting options: strip id3v2 tag, --"
 			     << framesToModify[0]->frameID() << endl;
+			error = true;
+		}
+		if (tagsToStrip & tagsToWrite) {
+			cerr << command << ": conflicting options: strip and write "
+			     << "the same tag version" << endl;
 			error = true;
 		}
 		// check for missing mandatory arguments
