@@ -26,7 +26,7 @@
 
 class LameTag {
 	public:
-		LameTag();
+		LameTag(long);
 		~LameTag();
 
 		void print(bool);
@@ -47,6 +47,27 @@ class LameTag {
 		void crc16Checksum(unsigned short*, const char*, int);
 
 		static unsigned short crc16Table[];
+		
+		String encoder;
+		int encodingMethod;
+		int quality;
+		char stereoMode;
+		char sourceRate;
+		unsigned char bitrate;
+		int musicLength;
+		char lowpassFilter;
+		float mp3Gain;
+		char athType;
+		char encodingFlags;
+		int encodingDelay;
+		int padding;
+		char noiseShaping;
+		bool unwiseSettings;
+		unsigned char lameTagCRC;
+		unsigned char musicCRC;
+		float peakSignal;
+		double trackGain;
+		double albumGain;
 };
 
 #endif /* __LAMETAG_H__ */
