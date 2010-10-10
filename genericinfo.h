@@ -20,16 +20,18 @@
 #ifndef __GENERICINFO_H__
 #define __GENERICINFO_H__
 
+#include <taglib/tstring.h>
+
 class GenericInfo {
 	public:
 		GenericInfo(const char id, const char *value) :
-				_id(id), _value(value) {}
+				_id(id), _value(value, DEF_TSTR_ENC) {}
 		const char id() const { return _id; }
-		const char *value() const { return _value; }
+		const String& value() const { return _value; }
 
 	private:
 		const char _id;
-		const char *_value;
+		const String _value;
 };
 
 #endif /* __GENERICINFO_H__ */
