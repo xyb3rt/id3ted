@@ -24,7 +24,7 @@
 #include <taglib/taglib.h>
 
 #define PROGNAME "id3ted"
-#define VERSION  "git-20100815"
+#define VERSION  "git-20101010"
 
 #define FILE_BUF_SIZE 4096
 #define FIELD_DELIM ':'
@@ -41,10 +41,7 @@ using namespace std;
 using namespace TagLib;
 using TagLib::uint;
 
-extern const char *g_progname;
-extern char g_fdelim;
-extern int g_numFiles;
-extern regmatch_t *g_fPathPMatch;
+extern const char *command;
 
 typedef enum _ID3v2FrameID {
 	FID3_XXXX,  /* Unknown frame */
