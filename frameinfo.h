@@ -25,74 +25,27 @@
 
 #include "id3ted.h"
 
-class MP3File;
-
 class FrameInfo {
-	protected:
-		const char *_id;
-		const ID3v2FrameID _fid;
-		const TagLib::String _value;
-		const unsigned int _fPathIdx;
-		
 	public:
-		FrameInfo(const char*, ID3v2FrameID, const char*, unsigned int = 0);
-		virtual ~FrameInfo() {}
+		FrameInfo(const char*, ID3v2FrameID, const char*);
 
 		const char* id() const { return _id; }
 		ID3v2FrameID fid() const { return _fid; }
-		const TagLib::String &value() const { return _value; }
-		unsigned int fPathIdx() const { return _fPathIdx; }
+		const String& text() const { return _text; }
+		const String& description() const { return _description; }
+		const ByteVector& language() const { return _language; }
+		const ByteVector& data() const { return _data; }
 
-		bool sameFIDIn(const std::vector<FrameInfo*>&);
-		virtual bool applyTo(MP3File&);
-};
+	private:
+		const char *_id;
+		const ID3v2FrameID _fid;
+		String _text;
+		String _description;
+		ByteVector _language;
+		ByteVector _data;
 
-class APICFrameInfo : public FrameInfo {
-	protected:
-		TagLib::String _mimetype;
-		TagLib::ByteVector _picture;
-		bool _fileRead;
-		bool _readError;
-	
-	public:
-		APICFrameInfo(const char*, ID3v2FrameID, const char*, unsigned int = 0);
-
-		const TagLib::String& mimetype() const { return _mimetype; }
-		const TagLib::ByteVector& picture() const { return _picture; }
-		bool fileRead() { return _fileRead; }
-		bool readError() { return _readError; }
-
-		bool readFile();
-		bool applyTo(MP3File&);
-};
-
-class TDFrameInfo : public FrameInfo {
-	protected:
-		TagLib::String _text;
-		TagLib::String _description;
-		bool _multipleFields;
-
-	public:
-		TDFrameInfo(const char*, ID3v2FrameID, const char*, unsigned int = 0);
-		virtual ~TDFrameInfo() {}
-
-		const TagLib::String& text() const { return _text; }
-		const TagLib::String& description() const { return _description; }
-		bool multipleFields() { return _multipleFields; }
-
-		virtual bool applyTo(MP3File&);
-};
-
-class TDLFrameInfo : public TDFrameInfo {
-	protected:
-		TagLib::String _language;
-	
-	public:
-		TDLFrameInfo(const char*, ID3v2FrameID, const char*, unsigned int = 0);
-
-		const TagLib::String& language() const { return _language; }
-
-		bool applyTo(MP3File&);
+		void split2();
+		void split3();
 };
 
 #endif /* __FRAMEINFO_H__ */

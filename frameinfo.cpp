@@ -16,244 +16,70 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <taglib/mpegfile.h>
-#include <taglib/id3v2tag.h>
-#include <taglib/commentsframe.h>
-#include <taglib/textidentificationframe.h>
-#include <taglib/unsynchronizedlyricsframe.h>
-#include <taglib/urllinkframe.h>
+#include <iostream>
+#include <cstring>
 
+#include "fileio.h"
 #include "frameinfo.h"
-#include "mp3file.h"
 
-GenericInfo::GenericInfo(const char id, const char *value) :
-			_id(id), _value(value) {}
+FrameInfo::FrameInfo(const char id, ID3v2FrameID fid, const char *text) :
+		_id(id), _fid(fid), _text(text, DEF_TSTR_ENC),
+		_description(), _language(), _data()
+{
+	switch (_fid) {
+		case FID3_APIC: {
+			IFile file(text);
+			const char *mimetype;
 
-bool GenericInfo::sameIDIn(const std::vector<GenericInfo*> &list) {
-	std::vector<GenericInfo*>::const_iterator gi_it = list.begin();
-	for (; gi_it != list.end(); gi_it++) {
-		if (this->_id == (*gi_it)->_id) return true;
-	}
-
-	return false;
-}
-
-FrameInfo::FrameInfo(const char *id, ID3v2FrameID fid, const char *value, unsigned int fPathIdx) :
-			_id(id), _fid(fid), _value(value, DEF_TSTR_ENC), _fPathIdx(fPathIdx) {}
-
-bool FrameInfo::sameFIDIn(const std::vector<FrameInfo*> &list) {
-	std::vector<FrameInfo*>::const_iterator fi_it = list.begin();
-	for (; fi_it != list.end(); fi_it++) {
-		if (this->_fid == (*fi_it)->_fid) return true;
-	}
-
-	return false;
-}
-
-bool FrameInfo::applyTo(MP3File &mp3File) {
-	if (!mp3File.isValid() || mp3File.isReadOnly()) return false;
-
-	if (!mp3File.hasID3v2Tag()) mp3File.createID3v2Tag();
-	TagLib::ID3v2::Tag *id3v2Tag = mp3File._id3v2Tag;
-
-	TagLib::ID3v2::FrameList frameList = id3v2Tag->frameListMap()[_id];
-	TagLib::String input;
-
-	if (_fPathIdx > 0) {
-		if (g_fPathPMatch == NULL) return false;
-		if (g_fPathPMatch[_fPathIdx].rm_so == -1 || g_fPathPMatch[_fPathIdx].rm_eo == -1) return false;
-
-		input = TagLib::String(mp3File.filename(), DEF_TSTR_ENC).substr(g_fPathPMatch[_fPathIdx].rm_so, g_fPathPMatch[_fPathIdx].rm_eo - g_fPathPMatch[_fPathIdx].rm_so);
-	} else {
-		input = _value;
-	}
-
-	if (input.length() > 0) {
-		if (!frameList.isEmpty()) {
-			frameList.front()->setText(input);
-		} else {
-			TagLib::ID3v2::Frame *newFrame;
-			switch (_fid) {
-				case FID3_WCOM:
-				case FID3_WCOP:
-				case FID3_WOAF:
-				case FID3_WOAR:
-				case FID3_WOAS:
-				case FID3_WORS:
-				case FID3_WPAY:
-				case FID3_WPUB: {
-					newFrame = new TagLib::ID3v2::UrlLinkFrame(_id);
-					break;
-				}
-				default: {
-					newFrame = new TagLib::ID3v2::TextIdentificationFrame(_id);
-					break;
-				}
+			if (!file.isOpen())
+				break;
+			mimetype = FileIO::mimetype(text);
+			if (strstr(mimetype, "image") == NULL) {
+				cerr << command << ": " << text << ": Wrong mime-type: "
+				     << mimetype << "! Not an image, not attached." << endl;
+				break;
 			}
-			newFrame->setText(input);
-			id3v2Tag->addFrame(newFrame);
-		}
-	} else if (!frameList.isEmpty()) {
-		id3v2Tag->removeFrame(frameList.front());
-	}
-
-	return true;
-}
-
-APICFrameInfo::APICFrameInfo(const char *id, ID3v2FrameID fid, const char *value, unsigned int fPathIdx) :
-			FrameInfo(id, fid, value, fPathIdx), _mimetype(), _picture(), _fileRead(false), _readError(false) {}
-
-/* implementation of APICFrameInfo::readFile() in apic.cpp */
-/* implementation of APICFrameInfo::applyTo() in apic.cpp */
-
-TDFrameInfo::TDFrameInfo(const char *id, ID3v2FrameID fid, const char *value, unsigned int fPathIdx) :
-			FrameInfo(id, fid, value, fPathIdx), _text(), _description(), _multipleFields(false) {
-	int inputLen = _value.length();
-	int textLen = inputLen, descLen;
-	int descIdx = _value.find(g_fdelim, 0);
-	
-	if (descIdx != -1) {
-		_multipleFields = true;
-		textLen = descIdx++;
-		descLen = inputLen - descIdx;
-		_description = _value.substr(descIdx, descLen);
-	}
-
-	_text = _value.substr(0, textLen);
-}
-
-bool TDFrameInfo::applyTo(MP3File &mp3File) {
-	if (!mp3File.isValid() || mp3File.isReadOnly()) return false;
-
-	if (!mp3File.hasID3v2Tag()) mp3File.createID3v2Tag();
-	TagLib::ID3v2::Tag *id3v2Tag = mp3File._id3v2Tag;
-
-	TagLib::ID3v2::FrameList frameList = id3v2Tag->frameListMap()[_id];
-
-	int textLength = _text.length();
-	bool alreadyIn = false;
-	ID3v2::UserUrlLinkFrame *uulf;
-	ID3v2::UserTextIdentificationFrame *utif;
-
-	/* looking for a frame with the same type and description
-	   found it -> overwrite it: */
-	ID3v2::FrameList::ConstIterator fl_it = frameList.begin();
-	while (fl_it != frameList.end()) {
-		if (_fid == FID3_TXXX) {
-			if ((utif = dynamic_cast<ID3v2::UserTextIdentificationFrame*>(*fl_it)) == NULL) continue;
-			alreadyIn = _description == utif->description();
-		} else {
-			if ((uulf = dynamic_cast<ID3v2::UserUrlLinkFrame*>(*fl_it)) == NULL) continue;
-			alreadyIn = _description == uulf->description();
-		}
-
-		if (alreadyIn) {
-			if (textLength > 0) {
-				(*fl_it)->setText(_text);
-			} else {
-				id3v2Tag->removeFrame(*fl_it);
-			}
+			file.read(_data);
+			if (file.error())
+				_data.clear();
+			description = mimetype;
 			break;
 		}
-		fl_it++;
-	}
-			
-	/* no frame with the same type, description and language
-	   have to add a new one: */
-	if (!alreadyIn && textLength > 0) {
-		if (_fid == FID3_TXXX) {
-			utif = new ID3v2::UserTextIdentificationFrame(DEF_TSTR_ENC);
-			utif->setDescription(_description);
-			utif->setText(_text);
-			id3v2Tag->addFrame(utif);
-		} else {
-			uulf = new ID3v2::UserUrlLinkFrame(DEF_TSTR_ENC);
-			uulf->setDescription(_description);
-			uulf->setUrl(_text);
-			id3v2Tag->addFrame(uulf);
-		}
-	}
-
-	return true;
-}
-
-TDLFrameInfo::TDLFrameInfo(const char *id, ID3v2FrameID fid, const char *value, unsigned int fPathIdx) :
-			TDFrameInfo(id, fid, value, fPathIdx), _language("XXX", DEF_TSTR_ENC) {
-	if (_multipleFields) {
-		int descLen = _description.length();
-		int langLen = descLen;
-		int langIdx = _description.find(g_fdelim, 0);
-
-		if (langIdx != -1) {
-			descLen = langIdx++;
-			langLen -= langIdx;
-			
-			if (langLen == 3) _language = _description.substr(langIdx, langLen);
-			_description = _description.substr(0, descLen);
-		}
-	}
-}
-
-bool TDLFrameInfo::applyTo(MP3File &mp3File) {
-	if (!mp3File.isValid() || mp3File.isReadOnly()) return false;
-
-	if (!mp3File.hasID3v2Tag()) mp3File.createID3v2Tag();
-	TagLib::ID3v2::Tag *id3v2Tag = mp3File._id3v2Tag;
-
-	TagLib::ID3v2::FrameList frameList = id3v2Tag->frameListMap()[_id];
-
-	int textLength = _text.length();
-	bool alreadyIn = false;
-	ID3v2::CommentsFrame *cf;
-	ID3v2::UnsynchronizedLyricsFrame *ulf;
-
-	/* looking for a frame with the same type, description and language
-	   found it -> overwrite it: */
-	ID3v2::FrameList::ConstIterator fl_it = frameList.begin();
-	while (fl_it != frameList.end()) {
-		if (_fid == FID3_COMM) {
-			if ((cf = dynamic_cast<ID3v2::CommentsFrame*>(*fl_it)) == NULL) continue;
-			if (cf->language().isNull() || cf->language().isEmpty()) {
-				cf->setLanguage("XXX");
-			}
-			alreadyIn = _description == cf->description() && _language == cf->language();
-		} else {	
-			if ((ulf = dynamic_cast<ID3v2::UnsynchronizedLyricsFrame*>(*fl_it)) == NULL) continue;
-			if (ulf->language().isNull() || ulf->language().isEmpty()) {
-				ulf->setLanguage("XXX");
-			}
-			alreadyIn = _description == ulf->description() && _language == ulf->language();
-		}
-
-		if (alreadyIn) {
-			if (textLength > 0) {
-				(*fl_it)->setText(_text);
-			} else {
-				id3v2Tag->removeFrame(*fl_it);
-			}
+		case FID3_COMM:
+		case FID3_USLT:
+			split3();
 			break;
-		}
-		fl_it++;
+		case FID3_TXXX:
+		case FID3_WXXX:
+			split2();
+			break;
 	}
-
-	/* no frame with the same type, description and language
-	   have to add a new one: */
-	if (!alreadyIn && textLength > 0) {
-		if (_fid == FID3_COMM) {
-			cf = new ID3v2::CommentsFrame(DEF_TSTR_ENC);
-			cf->setText(_text);
-			cf->setDescription(_description);
-			cf->setLanguage(_language.data(DEF_TSTR_ENC));
-			id3v2Tag->addFrame(cf);
-		} else {
-			ulf = new ID3v2::UnsynchronizedLyricsFrame(DEF_TSTR_ENC);
-			ulf->setText(_text);
-			ulf->setDescription(_description);
-			ulf->setLanguage(_language.data(DEF_TSTR_ENC));
-			id3v2Tag->addFrame(ulf);
-		} 
-	}
-
-	return true;
 }
 
+void FrameInfo::split2() {
+	int idx, len;
+
+	idx = text.find(delimiter, 0);
+	if (idx != -1) {
+		len = idx++;
+		description = text.substr(idx, text.length() - len);
+		text = text.substr(0, len);
+	}
+}
+
+void FrameInfo::split3() {
+	int idx, len;
+
+	split2();
+	if (!description.isEmpty()) {
+		idx = description.find(delimiter, 0);
+		if (idx != -1) {
+			len = idx++;
+			if (description.length() - idx == 3)
+				language = description.substr(idx, 3).data();
+			else
+				language = "XXX";
+			description = description.substr(0, len);
+		}
+	}
+}
