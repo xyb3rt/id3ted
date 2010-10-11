@@ -416,95 +416,18 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 			case 0: {
 				ID3v2FrameID fid = (ID3v2FrameID) optFrameID;
 				const char *textFID = FrameTable::textFrameID(fid);
-				ID3v2::Frame *frame = NULL;
+				FrameInfo *info = new FrameInfo(textFID, fid, optarg);
 
-				switch(fid) {
-					case FID3_XXXX: {
-						break;
-					}
-					case FID3_APIC: {
-						IFile file(optarg);
-						ByteVector picture;
-						const char *mimetype;
-
-						if (!file.isOpen())
-							break;
-						mimetype = FileIO::mimetype(optarg);
-						if (strstr(mimetype, "image") == NULL) {
-							cerr << command << ": " << optarg << ": Wrong mime-type: "
-							     << mimetype << "! Not an image, not attached." << endl;
-							break;
-						}
-						file.read(picture);
-						if (!picture.isEmpty() && !file.error()) {
-							ID3v2::AttachedPictureFrame *apic =
-									new ID3v2::AttachedPictureFrame();
-							apic->setPicture(picture);
-							apic->setMimeType(mimetype);
-							frame = apic;
-						}
-						break;
-					}
-					case FID3_COMM: {
-						String text;
-						String description;
-						String language;
-						split3(optarg, text, description, language);
-						ID3v2::CommentsFrame *comment =
-								new ID3v2::CommentsFrame(DEF_TSTR_ENC);
-						comment->setText(text);
-						comment->setDescription(description);
-						comment->setLanguage(language.data(DEF_TSTR_ENC));
-						frame = comment;
-						break;
-					}
-					case FID3_TXXX: {
-						String text;
-						String description;
-						split2(optarg, text, description);
-						ID3v2::UserTextIdentificationFrame *userText =
-								new ID3v2::UserTextIdentificationFrame(DEF_TSTR_ENC);
-						userText->setText(text);
-						userText->setDescription(description);
-						frame = userText;
-						break;
-					}
-					case FID3_USLT: {
-						String text;
-						String description;
-						String language;
-						split3(optarg, text, description, language);
-						ID3v2::UnsynchronizedLyricsFrame *uslt =
-								new ID3v2::UnsynchronizedLyricsFrame(DEF_TSTR_ENC);
-						uslt->setText(text);
-						uslt->setDescription(description);
-						uslt->setLanguage(language.data(DEF_TSTR_ENC));
-						frame = uslt;
-						break;
-					}
-					case FID3_WXXX: {
-						String text;
-						String description;
-						split2(optarg, text, description);
-						ID3v2::UserUrlLinkFrame *userUrl =
-								new ID3v2::UserUrlLinkFrame(DEF_TSTR_ENC);
-						userUrl->setText(text);
-						userUrl->setDescription(description);
-						frame = userUrl;
-						break;
-					}
-					default: {
-						frame = new ID3v2::TextIdentificationFrame(textFID, DEF_TSTR_ENC);
-						frame->setText(optarg);
-						break;
-					}
+				if (fid == FID3_TXXX && info->description().isEmpty()) {
+					cerr << g_progname << ": missing description field in --TXXX "
+					     << "option argument" << endl;
+					delete info;
+					error = true;
+					break;
 				}
-			
-				if (frame != NULL) {
-					framesToModify.push_back(frame);
-					tagsToWrite |= 2;
-					writeFile = true;
-				}
+				framesToModify.push_back(frame);
+				tagsToWrite |= 2;
+				writeFile = true;
 				break;
 			}
 		}
