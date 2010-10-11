@@ -1,4 +1,4 @@
-/* id3ted: optionhandler.h
+/* id3ted: options.h
  * Copyright (c) 2010 Bert Muennich <muennich at informatik.hu-berlin.de>
  *
  * This program is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  * USA.
  */
 
-#ifndef __OPTIONHANDLER_H__
-#define __OPTIONHANDLER_H__
+#ifndef __OPTIONS_H__
+#define __OPTIONS_H__
 
 #include <getopt.h>
 #include <sys/time.h>
@@ -28,6 +28,7 @@
 #include <taglib/tstring.h>
 
 #include "id3ted.h"
+#include "frameinfo.h"
 #include "genericinfo.h"
 
 enum LongOptOnly {
@@ -36,43 +37,37 @@ enum LongOptOnly {
 	OPT_LO_ORG_MOVE
 };
 
-class OptionHandler {
+class Options {
 	public:
-		static const char *options;
-		static const struct option longOptions[];
-		static int optFrameID;
-		
-		int fileCount;
-		char fieldDelimiter;
-		bool error;
-		
-		int tagsToWrite;                   // -[123]
-		int tagsToStrip;                   // -[sSD]
-		bool writeFile;                    // -[123sSDaAtcgTy]
-		bool extractAPICs;                 // -x
-		bool showInfo;                     // -i
-		bool listTags;                     // -[lL]
-		bool listV2WithDesc;               // -L
-		bool printLameTag;                 // -[mM]
-		bool checkLameCRC;                 // -M
-		bool forceOverwrite;               // -f
-		struct timeval *times;             // -p
+		static int tagsToWrite;                   // -[123]
+		static int tagsToStrip;                   // -[sSD]
+		static bool writeFile;                    // -[123sSDaAtcgTy]
+		static bool extractAPICs;                 // -x
+		static bool showInfo;                     // -i
+		static bool listTags;                     // -[lL]
+		static bool listV2WithDesc;               // -L
+		static bool printLameTag;                 // -[mM]
+		static bool checkLameCRC;                 // -M
+		static bool forceOverwrite;               // -f
+		static char fieldDelimiter;               // -d
+		static struct timeval *times;             // -p
 		/* TODO: Patterns */
-		bool moveFiles;                    // --move
-		vector<GenericInfo*> genericMods;  // -[aAtcgTy]
-		vector<char*> framesToRemove;      // -r
-		vector<TagLib::ID3v2::Frame*> framesToModify; // --FID
+		static bool moveFiles;                    // --move
+		static vector<GenericInfo*> genericMods;  // -[aAtcgTy]
+		static vector<char*> framesToRemove;      // -r
+		static vector<FrameInfo*> framesToModify; // --FID
 
-		OptionHandler(int, char**);
-		~OptionHandler();
-
+		static int fileCount;
+		
+		static bool parseCommandLine(int, char**);
 		static void printVersion();
 		static void printUsage();
 		
 	private:
-		void split2(const char*, String&, String&);
-		void split3(const char*, String&, String&, String&);
+		static const char *options;
+		static const struct option longOptions[];
+		static int optFrameID;
 };
 
-#endif /* __OPTIONHANDLER_H__ */
+#endif /* __OPTIONS_H__ */
 
