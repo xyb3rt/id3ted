@@ -41,12 +41,6 @@ MP3File::MP3File(const char *filename, int _tags, bool lame) :
 		id3v2Tag = file.ID3v2Tag(tags & 2);
 		id3Tag = file.tag();
 
-		if (lameTag) {
-			// TODO: calc offset
-			long offset = 0L;
-			lameTag = new LameTag(filename, offset);
-		}
-
 		if (tags == 0) {
 			// tag version to write not given on command line
 			// -> write only the tags already in the file
@@ -54,9 +48,21 @@ MP3File::MP3File(const char *filename, int _tags, bool lame) :
 				tags |= 1;
 			if (id3v2Tag != NULL && !id3v2Tag->isEmpty())
 				tags |= 2;
-			if (tags == 0)
+			if (tags == 0) {
 				// no tags found -> use version 2 as default
 				tags = 2;
+				id3v2Tag = file.ID3v2Tag(true);
+			}
+		}
+
+		if (lame) {
+			long frameOffset, frameLength;
+			if (id3v2Tag != NULL && !id3v2Tag->isEmpty())
+				frameOffset = file.firstFrameOffset();
+			else
+				frameOffset = file.nextFrameOffset(0);
+			frameLength = file.nextFrameOffset(frameOffset + 1) - frameOffset;
+			lameTag = new LameTag(filename, frameOffset, frameLength);
 		}
 	}
 }

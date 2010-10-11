@@ -26,7 +26,7 @@
 
 class LameTag {
 	public:
-		LameTag(const char*, long);
+		LameTag(const char*, long, long);
 		~LameTag();
 
 		void print(bool);
@@ -48,6 +48,7 @@ class LameTag {
 
 		static unsigned short crc16Table[];
 		
+		bool valid;
 		String encoder;
 		int encodingMethod;
 		int quality;
