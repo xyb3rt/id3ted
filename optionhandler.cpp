@@ -5,6 +5,8 @@
 #include <taglib/attachedpictureframe.h>
 #include <taglib/commentsframe.h>
 #include <taglib/textidentificationframe.h>
+#include <taglib/unsynchronizedlyricsframe.h>
+#include <taglib/urllinkframe.h>
 
 #include "fileio.h"
 #include "frametable.h"
@@ -448,30 +450,23 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 						String description;
 						String language;
 						split3(optarg, text, description, language);
-						if (!text.isEmpty()) {
-							ID3v2::CommentsFrame *comment =
-									new ID3v2::CommentsFrame(DEF_TSTR_ENC);
-							comment->setText(text);
-							if (!description.isEmpty())
-								comment->setDescription(description);
-							if (!language.isEmpty())
-								comment->setLanguage(language.data(DEF_TSTR_ENC));
-							frame = comment;
-						}
+						ID3v2::CommentsFrame *comment =
+								new ID3v2::CommentsFrame(DEF_TSTR_ENC);
+						comment->setText(text);
+						comment->setDescription(description);
+						comment->setLanguage(language.data(DEF_TSTR_ENC));
+						frame = comment;
 						break;
 					}
 					case FID3_TXXX: {
 						String text;
 						String description;
 						split2(optarg, text, description);
-						if (!text.isEmpty()) {
-							ID3v2::UserTextIdentificationFrame *userText =
-									new ID3v2::UserTextIdentificationFrame(DEF_TSTR_ENC);
-							userText.setText(text);
-							if (!description.isEmpty())
-								userText.setDescription(description);
-							frame = userText;
-						}
+						ID3v2::UserTextIdentificationFrame *userText =
+								new ID3v2::UserTextIdentificationFrame(DEF_TSTR_ENC);
+						userText->setText(text);
+						userText->setDescription(description);
+						frame = userText;
 						break;
 					}
 					case FID3_USLT: {
@@ -479,30 +474,23 @@ OptionHandler::OptionHandler(int argc, char **argv) :
 						String description;
 						String language;
 						split3(optarg, text, description, language);
-						if (!text.isEmpty()) {
-							ID3v2::CommentsFrame *uslt =
-									new ID3v2::UnsynchronisedLyricsFrame(DEF_TSTR_ENC);
-							uslt->setText(text);
-							if (!description.isEmpty())
-								uslt->setDescription(description);
-							if (!language.isEmpty())
-								uslt->setLanguage(language.data(DEF_TSTR_ENC));
-							frame = uslt;
-						}
+						ID3v2::UnsynchronizedLyricsFrame *uslt =
+								new ID3v2::UnsynchronizedLyricsFrame(DEF_TSTR_ENC);
+						uslt->setText(text);
+						uslt->setDescription(description);
+						uslt->setLanguage(language.data(DEF_TSTR_ENC));
+						frame = uslt;
 						break;
 					}
 					case FID3_WXXX: {
 						String text;
 						String description;
 						split2(optarg, text, description);
-						if (!text.isEmpty()) {
-							ID3v2::UserUrlLinkFrame *userUrl =
-									new ID3v2::UserUrlLinkFrame(DEF_TSTR_ENC);
-							userUrl.setText(text);
-							if (!description.isEmpty())
-								userUrl.setDescription(description);
-							frame = userUrl;
-						}
+						ID3v2::UserUrlLinkFrame *userUrl =
+								new ID3v2::UserUrlLinkFrame(DEF_TSTR_ENC);
+						userUrl->setText(text);
+						userUrl->setDescription(description);
+						frame = userUrl;
 						break;
 					}
 					default: {
@@ -637,7 +625,7 @@ void OptionHandler::printUsage() {
 	     << "Fields in square brackets are optional, LANGUAGE is an ISO-639-2 3-byte code." << endl;
 }
 
-int OptionHandler::split2(const char *in, String &text, String &description) {
+void OptionHandler::split2(const char *in, String &text, String &description) {
 	int idx, len;
 
 	text = String(in, DEF_TSTR_ENC);
@@ -646,26 +634,25 @@ int OptionHandler::split2(const char *in, String &text, String &description) {
 		len = idx++;
 		description = text.substr(idx, text.length() - len);
 		text = text.substr(0, len);
-		return 2;
+	} else {
+		description = "";
 	}
-	return 1;
 }
 
-int OptionHandler::split3(const char *in, String &text, String &description,
+void OptionHandler::split3(const char *in, String &text, String &description,
 		String &language) {
-	int idx, len, ret = 1;
+	int idx, len;
 
-	if (split2(in, text, description) > 1) {
+	split2(in, text, description);
+	if (!description.isEmpty()) {
 		idx = description.find(fieldDelimiter, 0);
 		if (idx != -1) {
 			len = idx++;
-			if (description.length() - idx == 3) {
+			if (description.length() - idx == 3)
 				language = description.substr(idx, 3);
-				ret = 3;
-			}
+			else
+				language = "";
 			description = description.substr(0, len);
 		}
-		ret = 2;
 	}
-	return ret;
 }

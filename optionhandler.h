@@ -70,8 +70,8 @@ class OptionHandler {
 		static void printUsage();
 		
 	private:
-		int split2(const char*, String&, String&);
-		int split3(const char*, String&, String&, String&);
+		void split2(const char*, String&, String&);
+		void split3(const char*, String&, String&, String&);
 };
 
 #endif /* __OPTIONHANDLER_H__ */
