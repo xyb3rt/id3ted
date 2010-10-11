@@ -21,9 +21,16 @@
 #define __FILEIO_H__
 
 #include <cstdio>
+#include <sys/time.h>
+
 #include <taglib/tbytevector.h>
 
 #include "id3ted.h"
+
+typedef struct _FileTimes {
+	struct timeval access;
+	struct timeval modification;
+} FileTimes;
 
 class FileIO {
 	public:
@@ -35,6 +42,8 @@ class FileIO {
 		static bool isWritable(const char*);
 		static void printSizeHumanReadable(unsigned long);
 		static const char* mimetype(const char*);
+		static bool saveTimes(const char*, FileTimes&);
+		static bool resetTimes(const char*, const FileTimes&);
 		static bool createDir(const char*);
 		static bool confirmOverwrite(const char*);
 

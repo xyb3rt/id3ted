@@ -10,6 +10,11 @@
 
 #include "fileio.h"
 
+#ifdef __APPLE__
+#define st_atim st_atimespec
+#define st_mtim st_mtimespec
+#endif
+
 #ifdef NO_STR_BASENAME
 const char* FileIO::basename(const char *path) {
 	static char* buffer = NULL;
@@ -113,6 +118,32 @@ const char* FileIO::mimetype(const char *file) {
 	return mimetype;
 }
 
+bool FileIO::saveTimes(const char *filename, FileTimes &times) {
+	struct stat stats;
+
+	if (filename == NULL)
+		return false;
+	if (stat(filename, &stats) == -1) {
+		cerr << command << ": " << filename << ": Could not stat file" << endl;
+		return false;
+	}
+	TIMESPEC_TO_TIMEVAL(&times.access, &stats.st_atim);
+	TIMESPEC_TO_TIMEVAL(&times.modification, &stats.st_mtim);
+	
+	return true;
+}
+
+bool FileIO::resetTimes(const char *filename, const FileTimes &times) {
+	struct timeval ptimes[2];
+
+	if (filename == NULL)
+		return false;
+	ptimes[0] = times.access;
+	ptimes[1] = times.modification;
+
+	return utimes(filename, ptimes) == 0;
+}
+
 bool FileIO::createDir(const char *path) {
 	char *directory = new char[strlen(path + 1)];
 	char *curr = directory;
@@ -152,7 +183,8 @@ bool FileIO::confirmOverwrite(const char *filename) {
 		userIn = fgets(buffer, 10, stdin);
 		if (userIn == NULL)
 			continue;
-		if (strcmp(buffer, "\n") == 0 || strcmp(buffer, "n\n") == 0 || strcmp(buffer, "N\n") == 0) {
+		if (strcmp(buffer, "\n") == 0 || strcmp(buffer, "n\n") == 0 ||
+				strcmp(buffer, "N\n") == 0) {
 			break;
 		} else if (strcmp(buffer, "y\n") == 0 || strcmp(buffer, "Y\n") == 0) {
 			ret = true;

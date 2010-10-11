@@ -21,7 +21,6 @@
 #define __OPTIONS_H__
 
 #include <getopt.h>
-#include <sys/time.h>
 #include <vector>
 
 #include <taglib/id3v2frame.h>
@@ -50,7 +49,7 @@ class Options {
 		static bool checkLameCRC;                 // -M
 		static bool forceOverwrite;               // -f
 		static char fieldDelimiter;               // -d
-		static struct timeval *times;             // -p
+		static bool preserveTimes;                // -p
 		/* TODO: Patterns */
 		static bool moveFiles;                    // --move
 		static vector<GenericInfo*> genericMods;  // -[aAtcgTy]
@@ -58,6 +57,7 @@ class Options {
 		static vector<FrameInfo*> framesToModify; // --FID
 
 		static int fileCount;
+		static const char **filenames;
 		
 		static bool parseCommandLine(int, char**);
 		static void printVersion();

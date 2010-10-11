@@ -23,20 +23,13 @@
 #include <list>
 #include <vector>
 #include <typeinfo>
-#include <getopt.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 
 #include "id3ted.h"
 #include "frameinfo.h"
 #include "frametable.h"
 #include "mp3file.h"
 #include "options.h"
-
-#ifdef __APPLE__
-#define st_atim st_atimespec
-#define st_mtim st_mtimespec
-#endif
 
 const char *command;
 
@@ -58,48 +51,37 @@ int main(int argc, char **argv) {
 		exit(2);
 	}
 
-	// iterating over the files
-	for (int fn_idx = optind; (unsigned int) fn_idx < argc; fn_idx++) {
-		const char *file = argv[fn_idx];
-		bool preserveTimes = false;
-		bool filenameToTag = fPathRegEx != NULL;
+	for (uint fileIdx = 0; fileIdx < Options::fileCount; ++fileIdx) {
+		const char *filename = Options::filenames[fileIdx];
 		struct stat stats;
 
-		if (stat(file, &stats) == -1) {
-			cerr << g_progname << ": " << file << ": Could not stat file" << endl;
-			retCode |= 8;
+		if (stat(filename, &stats) == -1) {
+			cerr << command << ": " << filename << ": Could not stat file" << endl;
+			retCode |= 4;
 			continue;
 		}
 
 		if (!S_ISREG(stats.st_mode)) {
-			cerr << g_progname << ": " << file << ": Not a regular file" << endl;
-			retCode |= 8;
+			cerr << command << ": " << filename << ": Not a regular file" << endl;
+			retCode |= 4;
 			continue;
-		}
-
-		// save the access and modification times
-		// of the file before the file's accessed for the first time
-		if (ptimes != NULL) {
-			TIMESPEC_TO_TIMEVAL(ptimes, &stats.st_atim);
-			TIMESPEC_TO_TIMEVAL(ptimes+1, &stats.st_mtim);
-			preserveTimes = true;
 		}
 
 		if (!MP3File::isReadable(file)) {
 			cerr << g_progname << ": " << file << ": Could not open file for reading" << endl;
-			retCode |= 8;
+			retCode |= 4;
 			continue;
 		}
 
 		if (writeFile && !MP3File::isWritable(file)) {
 			cerr << g_progname << ": " << file << ": Could not open file for writing" << endl;
-			retCode |= 8;
+			retCode |= 4;
 			continue;
 		}
 
 		MP3File mp3File(file);
 		if (!mp3File.isValid()) {
-			retCode |= 8;
+			retCode |= 4;
 			continue;
 		}
 
@@ -155,7 +137,7 @@ int main(int argc, char **argv) {
 		if (tagsToStrip > 0) {
 			if (!mp3File.strip(tagsToStrip)) {
 				cerr << g_progname << ": " << file << ": Could not strip id3 tag" << endl;
-				retCode |= 8;
+				retCode |= 4;
 			}
 		}
 
@@ -176,7 +158,7 @@ int main(int argc, char **argv) {
 				orgPattern = NULL;
 			} else if (ret > 1) {
 				cerr << g_progname << ": " << file << ": Could not organize file" << endl;
-				retCode |= 8;
+				retCode |= 4;
 			}
 		}
 

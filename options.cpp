@@ -22,7 +22,7 @@ bool Options::printLameTag = false;
 bool Options::checkLameCRC = false;
 bool Options::forceOverwrite = false;
 char Options::fieldDelimiter = FIELD_DELIM;
-struct timeval* Options::times = NULL;
+bool Options::preserveTimes = false;
 bool Options::moveFiles = false;
 
 bool Options::parseCommandLine(int argc, char **argv) {
@@ -56,7 +56,7 @@ bool Options::parseCommandLine(int argc, char **argv) {
 				FrameTable::listGenres();
 				exit(0);
 			case 'p':
-				times = new struct timeval[2];
+				preserveTimes = true;
 				break;
 			case 'd':
 				if (strlen(optarg) == 1) {
@@ -309,6 +309,7 @@ bool Options::parseCommandLine(int argc, char **argv) {
 	}
 
 	fileCount = argc - optind;
+	filenames = argv + optind;
 
 	if (!error) {
 		// check if given options are in conflict
