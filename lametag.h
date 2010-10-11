@@ -26,7 +26,7 @@
 
 class LameTag {
 	public:
-		LameTag(long);
+		LameTag(const char*, long);
 		~LameTag();
 
 		void print(bool);

@@ -42,7 +42,8 @@ FrameInfo::FrameInfo(const char id, ID3v2FrameID fid, const char *text) :
 			file.read(_data);
 			if (file.error())
 				_data.clear();
-			description = mimetype;
+			else
+				description = mimetype;
 			break;
 		}
 		case FID3_COMM:
