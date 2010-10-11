@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 
 #include "id3ted.h"
+#include "fileio.h"
 #include "frameinfo.h"
 #include "frametable.h"
 #include "mp3file.h"
@@ -46,15 +47,18 @@ int main(int argc, char **argv) {
 	if (strcmp(command, ".") == 0)
 		command = PROGNAME;
 
-	if (Options::parseCommandLine(argc, argv))
+	if (Options::parseCommandLine(argc, argv)) {
 		cerr << "Try `" << argv[0] << " --help' for more information." << endl;
 		exit(2);
 	}
 
 	for (uint fileIdx = 0; fileIdx < Options::fileCount; ++fileIdx) {
 		const char *filename = Options::filenames[fileIdx];
-		struct stat stats;
+		FileTimes ptimes;
+		bool preserveTimes = Options::preserveTimes &&
+				FileIO::saveTimes(filename, ptimes);
 
+		/*struct stat stats;
 		if (stat(filename, &stats) == -1) {
 			cerr << command << ": " << filename << ": Could not stat file" << endl;
 			retCode |= 4;
@@ -65,93 +69,96 @@ int main(int argc, char **argv) {
 			cerr << command << ": " << filename << ": Not a regular file" << endl;
 			retCode |= 4;
 			continue;
-		}
+		}*/
 
-		if (!MP3File::isReadable(file)) {
-			cerr << g_progname << ": " << file << ": Could not open file for reading" << endl;
+		if (!FileIO::isReadable(filename)) {
+			cerr << command << ": " << filename
+			     << ": Could not open file for reading" << endl;
 			retCode |= 4;
 			continue;
 		}
 
-		if (writeFile && !MP3File::isWritable(file)) {
-			cerr << g_progname << ": " << file << ": Could not open file for writing" << endl;
+		if (Options::writeFile && !FileIO::isWritable(filename)) {
+			cerr << command << ": " << filename
+			     << ": Could not open file for writing" << endl;
 			retCode |= 4;
 			continue;
 		}
 
-		MP3File mp3File(file);
-		if (!mp3File.isValid()) {
+		MP3File file(filename, Options::tagsToWrite, Options::printLameTag);
+		if (!file.isValid()) {
 			retCode |= 4;
 			continue;
 		}
 
-		if (filenameToTag) {
+		/*if (filenameToTag) {
 			// match filename regex pattern on file,
 			// because we have to extract tag information from filepath
 			if (regexec(fPathRegEx, file, fPathNMatch, g_fPathPMatch, 0)) {
 				cout << file << ": pattern does not match filename" << endl;
 				filenameToTag = false;
 			}
-		}
+		}*/
 
-		if (extractAPICs) {
-			mp3File.extractAPICs(forceOverwrite);
-		}
+		if (Options::extractAPICs)
+			file.extractAPICs(Options::forceOverwrite);
 
 		// delete id3v2 frames with given frame ids
-		if (framesToRemove.size() > 0 && tagsToStrip & 2) {
-			cerr << g_progname << ": -r option ignored, because whole id3v2 tag gets stripped" << endl;
-			framesToRemove.clear();
+		if (Options::framesToRemove.size() > 0 && Options::tagsToStrip & 2) {
+			cerr << command << ": -r option ignored, because whole id3v2 tag "
+			     << "gets stripped" << endl;
+			Options::framesToRemove.clear();
 			retCode |= 4;
 		} else {
-			std::vector<char*>::const_iterator f2dIter = framesToRemove.begin();
-			for (; f2dIter != framesToRemove.end(); f2dIter++) {
-				mp3File.removeFrames(*f2dIter);
+			std::vector<char*>::const_iterator frameID =
+					Options::framesToRemove.begin();
+			for (; frameID != Options::framesToRemove.end(); ++frameID) {
+				file.removeFrames(*frameID);
 			}
 		}
 
 		// applying generic tag information
-		std::vector<GenericInfo*>::const_iterator gmIter = genericMods.begin();
-		for (; gmIter != genericMods.end(); gmIter++) {
-			mp3File.apply(*gmIter);
-		}
+		std::vector<GenericInfo*>::const_iterator genInfo =
+				Options::genericMods.begin();
+		for (; genInfo != Options::genericMods.end(); ++genInfo)
+			file.apply(*genInfo);
 
 		// loop through the id3v2 frames for adding/modifying
-		std::vector<FrameInfo*>::const_iterator f2mIter = framesToModify.begin();
-		for (; f2mIter != framesToModify.end(); f2mIter++) {
-			if (filenameToTag || (*f2mIter)->fPathIdx() == 0) {
-				(*f2mIter)->applyTo(mp3File);
-			}
-		}
+		std::vector<FrameInfo*>::const_iterator frameInfo = 
+				Options::framesToModify.begin();
+		for (; frameInfo != Options::framesToModify.end(); ++frameInfo)
+			file.apply(*frameInfo);
 
 		// save the specified tags to the file
-		if (writeFile) {
-			if (updFlag) {
-				mp3File.save(updFlag);
-			} else {
-				mp3File.save();
-			}
-		}
+		if (Options::writeFile)
+			file.save();
 
 		// delete whole tag version
-		if (tagsToStrip > 0) {
-			if (!mp3File.strip(tagsToStrip)) {
-				cerr << g_progname << ": " << file << ": Could not strip id3 tag" << endl;
+		if (Options::tagsToStrip != 0) {
+			if (!file.strip(Options::tagsToStrip)) {
+				cerr << command << ": " << filename
+				     << ": Could not strip id3 tag" << endl;
 				retCode |= 4;
 			}
 		}
 
 		// print out requested information
-		if (showInfo || listTags || printLameTag) {
-			cout << file << ":" << endl;
-			if (showInfo) mp3File.showInfo();
-			if (printLameTag) mp3File.printLameTag(checkLameCRC);
-			if (listTags) mp3File.listTags(listV2WithDesc);
-			if (fn_idx < argc - 1) cout << endl;
+		if (Options::showInfo || Options::listTags || Options::printLameTag) {
+			cout << filename << ":" << endl;
+			if (Options::showInfo)
+				file.showInfo();
+			if (Options::printLameTag)
+				file.printLameTag(Options::checkLameCRC);
+			if (Options::listTags) {
+				file.listID3v1Tag();
+				file.listID3v2Tag(Options::listV2WithDesc);
+			}
+			if (fileIdx < Options::fileCount - 1)
+				cout << endl;
 		}
 
 		// organize file in directory structure defined by pattern
-		if (orgPattern != NULL) {
+		/*if (orgPattern != NULL) {
 			int ret = mp3File.organize(orgPattern, orgMove, forceOverwrite, (preserveTimes ? ptimes : NULL));
 
 			if (ret == 1) {
@@ -160,32 +167,12 @@ int main(int argc, char **argv) {
 				cerr << g_progname << ": " << file << ": Could not organize file" << endl;
 				retCode |= 4;
 			}
-		}
+		}*/
 
 		// reset access and modification times to
 		// their old values present before accessing the file:
-		if (preserveTimes && (orgPattern == NULL || !orgMove)) {
-			utimes(file, ptimes);
-		}
-	}
-
-	// cleanup - useless because at the end
-	if (fPathRegEx != NULL) {
-		regfree(fPathRegEx);
-		free(fPathRegEx);
-	}
-
-	if (g_fPathPMatch != NULL) free(g_fPathPMatch);
-	if (ptimes != NULL) free(ptimes);
-
-	std::vector<GenericInfo*>::iterator gmIter = genericMods.begin();
-	for (; gmIter != genericMods.end(); gmIter++) {
-		delete *gmIter;
-	}
-
-	std::vector<FrameInfo*>::iterator f2mIter = framesToModify.begin();
-	for (; f2mIter != framesToModify.end(); f2mIter++) {
-		delete *f2mIter;
+		if (preserveTimes && !Options::moveFiles)
+			FileIO::resetTimes(filename, ptimes);
 	}
 
 	return retCode;

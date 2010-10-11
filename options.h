@@ -56,7 +56,7 @@ class Options {
 		static vector<char*> framesToRemove;      // -r
 		static vector<FrameInfo*> framesToModify; // --FID
 
-		static int fileCount;
+		static uint fileCount;
 		static const char **filenames;
 		
 		static bool parseCommandLine(int, char**);
