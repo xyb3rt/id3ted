@@ -17,13 +17,20 @@
  */
 
 #include <iostream>
+#include <cstdio>
 
 #include <taglib/tstring.h>
-#include <taglib/id3v2tag.h>
 #include <taglib/id3v1tag.h>
+#include <taglib/id3v1genres.h>
+#include <taglib/id3v2tag.h>
+#include <taglib/attachedpictureframe.h>
+#include <taglib/commentsframe.h>
 #include <taglib/textidentificationframe.h>
+#include <taglib/unsynchronizedlyricsframe.h>
+#include <taglib/urllinkframe.h>
 
 #include "mp3file.h"
+#include "fileio.h"
 #include "frametable.h"
 
 MP3File::MP3File(const char *filename, int _tags, bool lame) : 
@@ -59,8 +66,8 @@ MP3File::~MP3File() {
 		delete lameTag;
 }
 
-void MP3File::apply(GenericInfo *genericInfo) {
-	if (genericInfo == NULL)
+void MP3File::apply(GenericInfo *info) {
+	if (info == NULL)
 		return;
 	if (!file.isValid() || file.readOnly())
 		return;
@@ -70,46 +77,123 @@ void MP3File::apply(GenericInfo *genericInfo) {
 			return;
 	}
 
-	switch(genericInfo->id()) {
+	switch(info->id()) {
 		case 'a': {
-			id3Tag->setArtist(genericInfo->value());
+			id3Tag->setArtist(info->value());
 			break;
 		}
 		case 'A': {
-			id3Tag->setAlbum(genericInfo->value());
+			id3Tag->setAlbum(info->value());
 			break;
 		}
 		case 't': {
-			id3Tag->setTitle(genericInfo->value());
+			id3Tag->setTitle(info->value());
 			break;
 		}
 		case 'c': {
-			id3Tag->setComment(genericInfo->value());
+			id3Tag->setComment(info->value());
 			break;
 		}
 		case 'g': {
-			id3Tag->setGenre(genericInfo->value());
+			id3Tag->setGenre(info->value());
 			break;
 		}
 		case 'T': {
 			if (tags & 1) {
-				int slash = genericInfo->value().find('/', 0);
+				int slash = info->value().find('/', 0);
 				if (slash < 0)
-					slash = genericInfo->value().length();
-				id3Tag->setTrack(genericInfo->value().substr(0, slash).toInt());
+					slash = info->value().length();
+				id3Tag->setTrack(info->value().substr(0, slash).toInt());
 			}
 			if (tags & 2) {
-				ID3v2::TextIdentificationFrame track(textFrameID(FID3TRCK),
-						DEF_TSTR_ENC);
-				track.setText(genericInfo->value());
-				apply(&track);
+				FrameInfo trackInfo(FrameTable::textFrameID(FID3_TRCK),
+						FID3_TRCK, info->value().toCString(USE_UNICODE));
+				apply(&trackInfo);
 			}
 			break;
 		}
 		case 'y': {
-			id3Tag->setYear(genericInfo->value().toInt());
+			id3Tag->setYear(info->value().toInt());
 			break;
 		}
+	}
+}
+
+void MP3File::apply(FrameInfo *info) {
+	if (!file.isValid() || file.readOnly())
+		return;
+	if (id3v2Tag == NULL || info == NULL)
+		return;
+	
+	vector<ID3v2::Frame*> frameList = find(info);
+
+	if (frameList.empty()) {
+		switch (info->fid()) {
+			case FID3_APIC: {
+				ID3v2::AttachedPictureFrame *apic = new ID3v2::AttachedPictureFrame();
+				apic->setMimeType(info->description());
+				apic->setType(ID3v2::AttachedPictureFrame::FrontCover);
+				apic->setPicture(info->data());
+				id3v2Tag->addFrame(apic);
+				break;
+			}
+			case FID3_COMM: {
+				ID3v2::CommentsFrame *comment = new ID3v2::CommentsFrame(DEF_TSTR_ENC);
+				comment->setText(info->text());
+				comment->setDescription(info->description());
+				comment->setLanguage(info->language());
+				id3v2Tag->addFrame(comment);
+				break;
+			}
+			case FID3_TXXX: {
+				ID3v2::UserTextIdentificationFrame *userText =
+						new ID3v2::UserTextIdentificationFrame(DEF_TSTR_ENC);
+				userText->setText(info->text());
+				userText->setDescription(info->description());
+				id3v2Tag->addFrame(userText);
+				break;
+			}
+			case FID3_USLT: {
+				ID3v2::UnsynchronizedLyricsFrame *lyrics =
+						new ID3v2::UnsynchronizedLyricsFrame(DEF_TSTR_ENC);
+				lyrics->setText(info->text());
+				lyrics->setDescription(info->description());
+				lyrics->setLanguage(info->language());
+				id3v2Tag->addFrame(lyrics);
+				break;
+			}
+			case FID3_WCOM:
+			case FID3_WCOP:
+			case FID3_WOAF:
+			case FID3_WOAR:
+			case FID3_WOAS:
+			case FID3_WORS:
+			case FID3_WPAY:
+			case FID3_WPUB: {
+				ID3v2::UrlLinkFrame *urlLink = new ID3v2::UrlLinkFrame(info->id());
+				urlLink->setUrl(info->text());
+				id3v2Tag->addFrame(urlLink);
+				break;
+			}
+			case FID3_WXXX: {
+				ID3v2::UserUrlLinkFrame *userUrl =
+						new ID3v2::UserUrlLinkFrame(DEF_TSTR_ENC);
+				userUrl->setUrl(info->text());
+				userUrl->setDescription(info->description());
+				id3v2Tag->addFrame(userUrl);
+				break;
+			}
+			default: {
+				ID3v2::TextIdentificationFrame *textFrame =
+						new ID3v2::TextIdentificationFrame(info->id(), DEF_TSTR_ENC);
+				textFrame->setText(info->text());
+				id3v2Tag->addFrame(textFrame);
+				break;
+			}
+		}
+	} else if (info->fid() != FID3_APIC) {
+		// overwrite matching frame
+		frameList.front()->setText(info->text());
 	}
 }
 
@@ -189,7 +273,7 @@ void MP3File::showInfo() const {
 			length / 3600, length / 60, length % 60);
 }
 
-void MP3File::printLameTag(bool checkCRC) {
+void MP3File::printLameTag(bool checkCRC) const {
 	if (!file.isValid())
 		return;
 	
@@ -215,15 +299,15 @@ void MP3File::listID3v1Tag() const {
 			(year != 0 ? TagLib::String::number(year).toCString() : ""));
 	printf("Album  : %-30s  Genre: %s (%d)\n",
 			id3v1Tag->album().toCString(USE_UNICODE),
-			(genreIdx == 255 ? "Unknown" : genreStr.toCString()), genre);
+			(genre == 255 ? "Unknown" : genreStr.toCString()), genre);
 	printf("Comment: %s\n", id3v1Tag->comment().toCString(USE_UNICODE));
 }
 
-bool MP3File::listID3v2Tag(bool withDesc) const {
+void MP3File::listID3v2Tag(bool withDesc) const {
 	if (!file.isValid())
 		return;
 	if (id3v2Tag == NULL || id3v2Tag->isEmpty())
-		return false;
+		return;
 
 	int frameCount = id3v2Tag->frameList().size(); 
 	cout << "ID3v2." << id3v2Tag->header()->majorVersion() << " - "
@@ -245,7 +329,7 @@ bool MP3File::listID3v2Tag(bool withDesc) const {
 				if (apic != NULL) {
 					int size = apic->picture().size();
 					cout << apic->mimeType() << ", ";
-					printSizeHumanReadable(size);
+					FileIO::printSizeHumanReadable(size);
 				}
 				break;
 			}
@@ -274,11 +358,11 @@ bool MP3File::listID3v2Tag(bool withDesc) const {
 				ID3v2::UnsynchronizedLyricsFrame *lyrics =
 						dynamic_cast<ID3v2::UnsynchronizedLyricsFrame*>(*frame);
 				if (lyrics != NULL) {
-					const char *text = ulf->text().toCString(USE_UNICODE);
+					const char *text = lyrics->text().toCString(USE_UNICODE);
 					const char *indent = "    ";
 
 					cout << "[" << lyrics->description().toCString(USE_UNICODE)
-					     << "](" << lyrics->language().toCString(USE_UNICODE)
+					     << "](" << lyrics->language().data()
 					     << "):\n" << indent;
 					while (*text != '\0') {
 						if (*text == (char) 10 || *text == (char) 13)
@@ -303,7 +387,8 @@ bool MP3File::listID3v2Tag(bool withDesc) const {
 				break;
 			}
 			case FID3_WXXX: {
-				ID3v2::UserUrlLinkFrame *userUrl = dynamic_cast<ID3v2::UserUrlLinkFrame*>(*frame);
+				ID3v2::UserUrlLinkFrame *userUrl =
+						dynamic_cast<ID3v2::UserUrlLinkFrame*>(*frame);
 				if (userUrl != NULL)
 					cout << "[" << userUrl->description().toCString(USE_UNICODE)
 					     << "]: " << userUrl->url().toCString(USE_UNICODE);
@@ -320,3 +405,73 @@ bool MP3File::listID3v2Tag(bool withDesc) const {
 	}
 }
 
+vector<ID3v2::Frame*> MP3File::find(FrameInfo *info) {
+	vector<ID3v2::Frame*> list;
+
+	if (id3v2Tag == NULL || info == NULL)
+		return list;
+
+	ID3v2::FrameList frameList = id3v2Tag->frameListMap()[info->id()];
+	ID3v2::FrameList::ConstIterator each = frameList.begin();
+
+	for (; each != frameList.end(); ++each) {
+		switch (FrameTable::frameID((*each)->frameID())) {
+			case FID3_APIC: {
+				ID3v2::AttachedPictureFrame *apic =
+						dynamic_cast<ID3v2::AttachedPictureFrame*>(*each);
+				if (apic == NULL)
+					continue;
+				if (info->data() == apic->picture() &&
+						info->description() == apic->mimeType())
+					list.push_back(*each);
+				break;
+			}
+			case FID3_COMM: {
+				ID3v2::CommentsFrame *comment =
+						dynamic_cast<ID3v2::CommentsFrame*>(*each);
+				if (comment == NULL)
+					continue;
+				if (comment->language().isEmpty())
+					comment->setLanguage("XXX");
+				if (info->description() == comment->description() &&
+						info->language() == comment->language())
+					list.push_back(*each);
+				break;
+			}
+			case FID3_TXXX: {
+				ID3v2::UserTextIdentificationFrame *userText =
+						dynamic_cast<ID3v2::UserTextIdentificationFrame*>(*each);
+				if (userText == NULL)
+					continue;
+				if (info->description() == userText->description())
+					list.push_back(*each);
+				break;
+			}
+			case FID3_USLT: {
+				ID3v2::UnsynchronizedLyricsFrame *lyrics =
+						dynamic_cast<ID3v2::UnsynchronizedLyricsFrame*>(*each);
+				if (lyrics == NULL)
+					continue;
+				if (lyrics->language().isEmpty())
+					lyrics->setLanguage("XXX");
+				if (info->description() == lyrics->description() &&
+						info->language() == lyrics->language())
+					list.push_back(*each);
+				break;
+			}
+			case FID3_WXXX: {
+				ID3v2::UserUrlLinkFrame *userUrl =
+						dynamic_cast<ID3v2::UserUrlLinkFrame*>(*each);
+				if (userUrl == NULL)
+					continue;
+				if (info->description() == userUrl->description())
+					list.push_back(*each);
+				break;
+			}
+			default:
+				list.push_back(*each);
+				break;
+		}
+	}
+	return list;
+}

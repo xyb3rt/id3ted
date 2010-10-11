@@ -20,10 +20,13 @@
 #ifndef __MP3FILE_H__
 #define __MP3FILE_H__
 
+#include <vector>
+
 #include <taglib/mpegfile.h>
 #include <taglib/id3v2frame.h>
 
 #include "id3ted.h"
+#include "frameinfo.h"
 #include "genericinfo.h"
 #include "lametag.h"
 
@@ -37,7 +40,7 @@ class MP3File {
 		const char* filename() const { return file.name(); }
 
 		void apply(GenericInfo*);
-		void apply(ID3v2::Frame*);
+		void apply(FrameInfo*);
 		void removeFrames(const char*);
 		bool save();
 		bool strip(int);
@@ -59,6 +62,8 @@ class MP3File {
 		ID3v2::Tag *id3v2Tag;
 		LameTag *lameTag;
 		int tags;
+
+		vector<ID3v2::Frame*> find(FrameInfo*);
 };
 
 #endif /* __MP3FILE_H__ */
