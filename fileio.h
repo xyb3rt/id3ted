@@ -33,6 +33,7 @@ class FileIO {
 		static bool exists(const char*);
 		static bool isReadable(const char*);
 		static bool isWritable(const char*);
+		static void printSizeHumanReadable(unsigned long);
 		static const char* mimetype(const char*);
 		static bool createDir(const char*);
 		static bool confirmOverwrite(const char*);

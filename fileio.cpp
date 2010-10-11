@@ -65,6 +65,27 @@ bool FileIO::isWritable(const char *path) {
 	return TagLib::File::isWritable(path);
 }
 
+void FileIO::printSizeHumanReadable(unsigned long size) {
+	float size_hr = size;
+	const char *unit = NULL;
+
+	if (size_hr >= 1073741824) {
+		size_hr /= 1073741824;
+		unit = "GB";
+	} else if (size_hr >= 1048576) {
+		size_hr /= 1048576;
+		unit = "MB";
+	} else if (size_hr >= 1024) {
+		size_hr /= 1024;
+		unit = "KB";
+	}
+
+	if (size == size_hr)
+		cout << size << " bytes";
+	else
+		printf("%.2f %s (%d bytes)", size_hr, unit, size);
+}
+
 const char* FileIO::mimetype(const char *file) {
   static char *buffer = NULL;
   static size_t bufferSize = 0, len;
