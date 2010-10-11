@@ -145,14 +145,14 @@ bool FileIO::confirmOverwrite(const char *filename) {
 	return ret;
 }
 
-FileIO::FileIO(const char *path, const char *mode) :
-		_stream(NULL), _path(path), _mode(mode) {
-	if (_path == NULL || _mode == NULL)
+FileIO::FileIO(const char *_path, const char *_mode) :
+		stream(NULL), path(_path), mode(_mode) {
+	if (path == NULL || mode == NULL)
 		return;
 	
-	_stream = fopen(_path, _mode);
-	if (_stream == NULL) {
-		fprintf(stderr, "%s: %s: ", command, _path);
+	stream = fopen(path, mode);
+	if (stream == NULL) {
+		fprintf(stderr, "%s: %s: ", command, path);
 		perror(NULL);
 	}
 }
@@ -160,8 +160,8 @@ FileIO::FileIO(const char *path, const char *mode) :
 int FileIO::close() {
 	int error;
 
-	error = fclose(_stream);
-	_stream = NULL;
+	error = fclose(stream);
+	stream = NULL;
 
 	return error;
 }
@@ -169,11 +169,11 @@ int FileIO::close() {
 size_t IFile::read(char *buffer, size_t size) {
 	size_t cnt = 0;
 
-	if (_stream == NULL)
+	if (stream == NULL)
 		return 0;
 
-	while (cnt < size && !feof(_stream) && !ferror(_stream))
-		cnt += fread(buffer, 1, size - cnt, _stream);
+	while (cnt < size && !feof(stream) && !ferror(stream))
+		cnt += fread(buffer, 1, size - cnt, stream);
 
 	return cnt;
 }
@@ -182,22 +182,22 @@ size_t IFile::read(ByteVector &vector) {
 	size_t cnt = 0, oldPos, size;
 	char *buffer;
 
-	if (_stream == NULL)
+	if (stream == NULL)
 		return 0;
 
-	oldPos = ftell(_stream);
-	fseek(_stream, 0, SEEK_END);
-	size = ftell(_stream);
-	fseek(_stream, 0, SEEK_SET);
+	oldPos = ftell(stream);
+	fseek(stream, 0, SEEK_END);
+	size = ftell(stream);
+	fseek(stream, 0, SEEK_SET);
 
 	vector.resize(size);
 	buffer = vector.data();
 
-	while (cnt < size && !feof(_stream) && !ferror(_stream))
-		fread(buffer, 1, size - cnt, _stream);
+	while (cnt < size && !feof(stream) && !ferror(stream))
+		fread(buffer, 1, size - cnt, stream);
 	
-	if (!ferror(_stream))
-		fseek(_stream, oldPos, SEEK_SET);
+	if (!ferror(stream))
+		fseek(stream, oldPos, SEEK_SET);
 
 	return cnt;
 }
@@ -205,11 +205,11 @@ size_t IFile::read(ByteVector &vector) {
 size_t OFile::write(const char *buffer, size_t size) {
 	size_t cnt = 0;
 
-	if (_stream == NULL)
+	if (stream == NULL)
 		return 0;
 
-	while (cnt < size && !ferror(_stream))
-		cnt += fwrite(buffer, 1, size - cnt, _stream);
+	while (cnt < size && !ferror(stream))
+		cnt += fwrite(buffer, 1, size - cnt, stream);
 
 	return cnt;
 }
@@ -218,14 +218,14 @@ size_t OFile::write(const ByteVector &vector) {
 	size_t cnt = 0, size;
 	const char *buffer;
 
-	if (_stream == NULL)
+	if (stream == NULL)
 		return 0;
 	
 	size = vector.size();
 	buffer = vector.data();
 
-	while (cnt < size && !ferror(_stream))
-		cnt += fwrite(buffer, 1, size - cnt, _stream);
+	while (cnt < size && !ferror(stream))
+		cnt += fwrite(buffer, 1, size - cnt, stream);
 
 	return cnt;
 }

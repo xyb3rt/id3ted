@@ -23,6 +23,8 @@
 #include <cstdio>
 #include <taglib/tbytevector.h>
 
+#include "id3ted.h"
+
 class FileIO {
 	public:
 #ifdef NO_STR_BASENAME
@@ -38,21 +40,21 @@ class FileIO {
 		FileIO(const char*, const char*);
 		virtual ~FileIO() = 0;
 
-		bool isOpen() { return _stream != NULL; }
+		bool isOpen() { return stream != NULL; }
 		int close();
-		bool eof() { return _stream != NULL && feof(_stream); }
-		bool error() { return _stream == NULL || ferror(_stream); }
+		bool eof() { return stream != NULL && feof(stream); }
+		bool error() { return stream == NULL || ferror(stream); }
 
 	protected:
-		FILE *_stream;
-		const char *_path;
-		const char *_mode;
+		FILE *stream;
+		const char *path;
+		const char *mode;
 };
 
 class IFile : public FileIO {
 	public:
-		IFile(const char *path) : FileIO(path, "r") {}
-		~IFile() { if (_stream) close(); }
+		IFile(const char *_path) : FileIO(_path, "r") {}
+		~IFile() { if (stream) close(); }
 
 		size_t read(char*, size_t);
 		size_t read(ByteVector&);
@@ -60,8 +62,8 @@ class IFile : public FileIO {
 
 class OFile : public FileIO {
 	public:
-		OFile(const char *path) : FileIO(path, "w+") {}
-		~OFile() { if (_stream) close(); }
+		OFile(const char *_path) : FileIO(_path, "w+") {}
+		~OFile() { if (stream) close(); }
 
 		size_t write(const char*, size_t);
 		size_t write(const ByteVector&);
