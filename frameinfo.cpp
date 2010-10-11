@@ -22,7 +22,7 @@
 #include "fileio.h"
 #include "frameinfo.h"
 
-FrameInfo::FrameInfo(const char id, ID3v2FrameID fid, const char *text) :
+FrameInfo::FrameInfo(const char *id, ID3v2FrameID fid, const char *text) :
 		_id(id), _fid(fid), _text(text, DEF_TSTR_ENC),
 		_description(), _language(), _data()
 {
@@ -43,7 +43,7 @@ FrameInfo::FrameInfo(const char id, ID3v2FrameID fid, const char *text) :
 			if (file.error())
 				_data.clear();
 			else
-				description = mimetype;
+				_description = mimetype;
 			break;
 		}
 		case FID3_COMM:
@@ -54,17 +54,19 @@ FrameInfo::FrameInfo(const char id, ID3v2FrameID fid, const char *text) :
 		case FID3_WXXX:
 			split2();
 			break;
+		default:
+			break;
 	}
 }
 
 void FrameInfo::split2() {
 	int idx, len;
 
-	idx = text.find(delimiter, 0);
+	idx = _text.find(options.fieldDelimiter, 0);
 	if (idx != -1) {
 		len = idx++;
-		description = text.substr(idx, text.length() - len);
-		text = text.substr(0, len);
+		_description = _text.substr(idx, _text.length() - len);
+		_text = _text.substr(0, len);
 	}
 }
 
@@ -72,15 +74,15 @@ void FrameInfo::split3() {
 	int idx, len;
 
 	split2();
-	if (!description.isEmpty()) {
-		idx = description.find(delimiter, 0);
+	if (!_description.isEmpty()) {
+		idx = _description.find(options.fieldDelimiter, 0);
 		if (idx != -1) {
 			len = idx++;
-			if (description.length() - idx == 3)
-				language = description.substr(idx, 3).data();
+			if (_description.length() - idx == 3)
+				_language = _description.substr(idx, 3).data(DEF_TSTR_ENC);
 			else
-				language = "XXX";
-			description = description.substr(0, len);
+				_language = "XXX";
+			_description = _description.substr(0, len);
 		}
 	}
 }

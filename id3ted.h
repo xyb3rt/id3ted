@@ -20,7 +20,6 @@
 #ifndef __ID3TED_H__
 #define __ID3TED_H__
 
-#include <regex.h>
 #include <taglib/taglib.h>
 
 #define PROGNAME "id3ted"
@@ -41,7 +40,10 @@ using namespace std;
 using namespace TagLib;
 using TagLib::uint;
 
+#include "optionhandler.h"
+
 extern const char *command;
+extern OptionHandler options;
 
 typedef enum _ID3v2FrameID {
 	FID3_XXXX,  /* Unknown frame */
