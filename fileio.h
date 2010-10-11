@@ -54,6 +54,8 @@ class FileIO {
 		int close();
 		bool eof() { return stream != NULL && feof(stream); }
 		bool error() { return stream == NULL || ferror(stream); }
+		long tell();
+		bool seek(long);
 
 	protected:
 		FILE *stream;

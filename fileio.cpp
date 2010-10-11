@@ -218,6 +218,20 @@ int FileIO::close() {
 	return error;
 }
 
+long FileIO::tell() {
+	if (stream == NULL)
+		return -1;
+	else
+		return ftell(stream);
+}
+
+bool FileIO::seek(long offset) {
+	if (stream == NULL)
+		return false;
+	else
+		return fseek(stream, offset, SEEK_SET) == 0;
+}
+
 size_t IFile::read(char *buffer, size_t size) {
 	size_t cnt = 0;
 
