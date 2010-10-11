@@ -26,80 +26,80 @@
 #include "mp3file.h"
 #include "frametable.h"
 
-MP3File::MP3File(const char *filename, int tags, bool lameTag) : 
-		_file(filename), _id3Tag(NULL), _id3v1Tag(NULL), _id3v2Tag(NULL),
-		_lameTag(NULL), _tags(tags) {
-	if (_file.isValid()) {
-		_id3v1Tag = _file.ID3v1Tag(_tags & 1);
-		_id3v2Tag = _file.ID3v2Tag(_tags & 2);
-		_id3Tag = _file.tag();
+MP3File::MP3File(const char *filename, int _tags, bool lame) : 
+		file(filename), id3Tag(NULL), id3v1Tag(NULL), id3v2Tag(NULL),
+		lameTag(NULL), tags(_tags) {
+	if (file.isValid()) {
+		id3v1Tag = file.ID3v1Tag(tags & 1);
+		id3v2Tag = file.ID3v2Tag(tags & 2);
+		id3Tag = file.tag();
 
 		if (lameTag) {
 			// TODO: calc offset
 			long offset = 0L;
-			_lameTag = new LameTag(filename, offset);
+			lameTag = new LameTag(filename, offset);
 		}
 
-		if (_tags == 0) {
+		if (tags == 0) {
 			// tag version to write not given on command line
 			// -> write only the tags already in the file
-			if (_id3v1Tag != NULL && !_id3v1Tag->isEmpty())
-				_tags |= 1;
-			if (_id3v2Tag != NULL && !_id3v2Tag->isEmpty())
-				_tags |= 2;
-			if (_tags == 0)
+			if (id3v1Tag != NULL && !id3v1Tag->isEmpty())
+				tags |= 1;
+			if (id3v2Tag != NULL && !id3v2Tag->isEmpty())
+				tags |= 2;
+			if (tags == 0)
 				// no tags found -> use version 2 as default
-				_tags = 2;
+				tags = 2;
 		}
 	}
 }
 
 MP3File::~MP3File() {
-	if (_lameTag != NULL)
-		delete _lameTag;
+	if (lameTag != NULL)
+		delete lameTag;
 }
 
 void MP3File::apply(GenericInfo *genericInfo) {
 	if (genericInfo == NULL)
 		return;
-	if (!_file.isValid() || _file.readOnly())
+	if (!file.isValid() || file.readOnly())
 		return;
-	if (_id3Tag == NULL) {
-		_id3Tag = _file.tag();
-		if (_id3Tag == NULL)
+	if (id3Tag == NULL) {
+		id3Tag = file.tag();
+		if (id3Tag == NULL)
 			return;
 	}
 
 	switch(genericInfo->id()) {
 		case 'a': {
-			_id3Tag->setArtist(genericInfo->value());
+			id3Tag->setArtist(genericInfo->value());
 			break;
 		}
 		case 'A': {
-			_id3Tag->setAlbum(genericInfo->value());
+			id3Tag->setAlbum(genericInfo->value());
 			break;
 		}
 		case 't': {
-			_id3Tag->setTitle(genericInfo->value());
+			id3Tag->setTitle(genericInfo->value());
 			break;
 		}
 		case 'c': {
-			_id3Tag->setComment(genericInfo->value());
+			id3Tag->setComment(genericInfo->value());
 			break;
 		}
 		case 'g': {
-			_id3Tag->setGenre(genericInfo->value());
+			id3Tag->setGenre(genericInfo->value());
 			break;
 		}
 		case 'T': {
-			if (_tags & 1) {
+			if (tags & 1) {
 				int slash = genericInfo->value().find('/', 0);
 				if (slash < 0)
 					slash = genericInfo->value().length();
-				_id3Tag->setTrack(genericInfo->value().substr(0, slash).toInt());
+				id3Tag->setTrack(genericInfo->value().substr(0, slash).toInt());
 			}
-			if (_tags & 2) {
-				ID3v2::TextIdentificationFrame track(textFrameID(FID3_TRCK),
+			if (tags & 2) {
+				ID3v2::TextIdentificationFrame track(textFrameID(FID3TRCK),
 						DEF_TSTR_ENC);
 				track.setText(genericInfo->value());
 				apply(&track);
@@ -107,7 +107,7 @@ void MP3File::apply(GenericInfo *genericInfo) {
 			break;
 		}
 		case 'y': {
-			_id3Tag->setYear(genericInfo->value().toInt());
+			id3Tag->setYear(genericInfo->value().toInt());
 			break;
 		}
 	}
@@ -116,31 +116,31 @@ void MP3File::apply(GenericInfo *genericInfo) {
 void MP3File::removeFrames(const char *textFID) {
 	if (textFID == NULL)
 		return;
-	if (!_file.isValid() || _file.readOnly())
+	if (!file.isValid() || file.readOnly())
 		return;
 
-	if (_id3v2Tag != NULL)
-		_id3v2Tag->removeFrames(textFID);
+	if (id3v2Tag != NULL)
+		id3v2Tag->removeFrames(textFID);
 }
 
 bool MP3File::save() {
-	if (!_file.isValid() || _file.readOnly())
+	if (!file.isValid() || file.readOnly())
 		return false;
 
 	// bug in TagLib 1.5.0?: deleting solely frame in id3v2 tag and
 	// then saving file causes the recovery of the last deleted frame.
 	// solution: strip the whole tag if it is empty before writing file!
-	if (_tags & 2 && _id3v2Tag != NULL && _id3v2Tag->isEmpty())
+	if (tags & 2 && id3v2Tag != NULL && id3v2Tag->isEmpty())
 		strip(2);
 
-	return _file.save(_tags, false);
+	return file.save(tags, false);
 }
 
 bool MP3File::strip(int tags) {
-	if (!_file.isValid() || _file.readOnly())
+	if (!file.isValid() || file.readOnly())
 		return false;
 
-	return _file.strip(tags);
+	return file.strip(tags);
 }
 
 void MP3File::showInfo() const {
@@ -148,10 +148,10 @@ void MP3File::showInfo() const {
 	const char *version;
 	const char *channelMode;
 	
-	if (!_file.isValid())
+	if (!file.isValid())
 		return;
 
-	if ((properties = _file.audioProperties()) == NULL)
+	if ((properties = file.audioProperties()) == NULL)
 		return;
 
 	switch (properties->version()) {
@@ -189,40 +189,48 @@ void MP3File::showInfo() const {
 			length / 3600, length / 60, length % 60);
 }
 
-void MP3File::listID3v1Tag() const {
-	if (!_file.isValid())
+void MP3File::printLameTag(bool checkCRC) {
+	if (!file.isValid())
 		return;
-	if (_id3v1Tag == NULL || _id3v1Tag->isEmpty())
+	
+	if (lameTag != NULL)
+		lameTag->print(checkCRC);
+}
+
+void MP3File::listID3v1Tag() const {
+	if (!file.isValid())
+		return;
+	if (id3v1Tag == NULL || id3v1Tag->isEmpty())
 		return;
 
-	int year = _id3v1Tag->year();
-	TagLib::String genreStr = _id3v1Tag->genre();
+	int year = id3v1Tag->year();
+	TagLib::String genreStr = id3v1Tag->genre();
 	int genre = ID3v1::genreIndex(genreStr);
 	
 	cout << "ID3v1" << ":\n";
 	printf("Title  : %-30s  Track: %d\n",
-			_id3v1Tag->title().toCString(USE_UNICODE), _id3v1Tag->track());
+			id3v1Tag->title().toCString(USE_UNICODE), id3v1Tag->track());
 	printf("Artist : %-30s  Year : %-4s\n",
-			_id3v1Tag->artist().toCString(USE_UNICODE),
+			id3v1Tag->artist().toCString(USE_UNICODE),
 			(year != 0 ? TagLib::String::number(year).toCString() : ""));
 	printf("Album  : %-30s  Genre: %s (%d)\n",
-			_id3v1Tag->album().toCString(USE_UNICODE),
+			id3v1Tag->album().toCString(USE_UNICODE),
 			(genreIdx == 255 ? "Unknown" : genreStr.toCString()), genre);
-	printf("Comment: %s\n", _id3v1Tag->comment().toCString(USE_UNICODE));
+	printf("Comment: %s\n", id3v1Tag->comment().toCString(USE_UNICODE));
 }
 
 bool MP3File::listID3v2Tag(bool withDesc) const {
-	if (!_file.isValid())
+	if (!file.isValid())
 		return;
-	if (_id3v2Tag == NULL || _id3v2Tag->isEmpty())
+	if (id3v2Tag == NULL || id3v2Tag->isEmpty())
 		return false;
 
-	int frameCount = _id3v2Tag->frameList().size(); 
-	cout << "ID3v2." << _id3v2Tag->header()->majorVersion() << " - "
+	int frameCount = id3v2Tag->frameList().size(); 
+	cout << "ID3v2." << id3v2Tag->header()->majorVersion() << " - "
 	     << frameCount << (frameCount != 1 ? " frames:" : " frame:") << endl;
 	
-	ID3v2::FrameList::ConstIterator frame = _id3v2Tag->frameList().begin();
-	for (; frame != _id3v2Tag->frameList().end(); ++frame) {
+	ID3v2::FrameList::ConstIterator frame = id3v2Tag->frameList().begin();
+	for (; frame != id3v2Tag->frameList().end(); ++frame) {
 		String textFID((*frame)->frameID(), DEF_TSTR_ENC);
 
 		cout << textFID;
@@ -310,13 +318,5 @@ bool MP3File::listID3v2Tag(bool withDesc) const {
 		}
 		cout << endl;
 	}
-}
-
-void MP3File::printLameTag(bool checkCRC) {
-	if (!_file.isValid())
-		return;
-	
-	if (_lameTag != NULL)
-		lameTag->print(checkCRC);
 }
 

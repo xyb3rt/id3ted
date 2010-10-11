@@ -32,9 +32,9 @@ class MP3File {
 		explicit MP3File(const char*, int, bool);
 		~MP3File();
 
-		bool isValid() const { return _file.isValid(); }
-		bool isReadOnly() const { return _file.readOnly(); }
-		const char* filename() const { return _file.name(); }
+		bool isValid() const { return file.isValid(); }
+		bool isReadOnly() const { return file.readOnly(); }
+		const char* filename() const { return file.name(); }
 
 		void apply(GenericInfo*);
 		void apply(ID3v2::Frame*);
@@ -43,9 +43,9 @@ class MP3File {
 		bool strip(int);
 
 		void showInfo() const;
+		void printLameTag(bool) const;
 		void listID3v1Tag() const;
 		void listID3v2Tag(bool) const;
-		void printLameTag(bool) const;
 
 		void extractAPICs(bool) const;
 
@@ -53,12 +53,12 @@ class MP3File {
 		int organize(const char*, bool = false, bool = false, struct timeval* = NULL);
 
 	private:
-		MPEG::File _file;
-		Tag *_id3Tag;
-		ID3v1::Tag *_id3v1Tag;
-		ID3v2::Tag *_id3v2Tag;
-		LameTag *_lameTag;
-		int _tags;
+		MPEG::File file;
+		Tag *id3Tag;
+		ID3v1::Tag *id3v1Tag;
+		ID3v2::Tag *id3v2Tag;
+		LameTag *lameTag;
+		int tags;
 };
 
 #endif /* __MP3FILE_H__ */
