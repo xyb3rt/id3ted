@@ -83,7 +83,7 @@ void FileIO::printSizeHumanReadable(unsigned long size) {
 	if (size == size_hr)
 		cout << size << " bytes";
 	else
-		printf("%.2f %s (%d bytes)", size_hr, unit, size);
+		printf("%.2f %s (%lu bytes)", size_hr, unit, size);
 }
 
 const char* FileIO::mimetype(const char *file) {
