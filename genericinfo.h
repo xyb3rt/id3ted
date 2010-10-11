@@ -22,6 +22,8 @@
 
 #include <taglib/tstring.h>
 
+#include "id3ted.h"
+
 class GenericInfo {
 	public:
 		GenericInfo(const char id, const char *value) :

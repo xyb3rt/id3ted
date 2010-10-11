@@ -21,6 +21,7 @@
 
 #include "fileio.h"
 #include "frameinfo.h"
+#include "options.h"
 
 FrameInfo::FrameInfo(const char *id, ID3v2FrameID fid, const char *text) :
 		_id(id), _fid(fid), _text(text, DEF_TSTR_ENC),
@@ -62,7 +63,7 @@ FrameInfo::FrameInfo(const char *id, ID3v2FrameID fid, const char *text) :
 void FrameInfo::split2() {
 	int idx, len;
 
-	idx = _text.find(options.fieldDelimiter, 0);
+	idx = _text.find(Options::fieldDelimiter, 0);
 	if (idx != -1) {
 		len = idx++;
 		_description = _text.substr(idx, _text.length() - len);
@@ -75,7 +76,7 @@ void FrameInfo::split3() {
 
 	split2();
 	if (!_description.isEmpty()) {
-		idx = _description.find(options.fieldDelimiter, 0);
+		idx = _description.find(Options::fieldDelimiter, 0);
 		if (idx != -1) {
 			len = idx++;
 			if (_description.length() - idx == 3)

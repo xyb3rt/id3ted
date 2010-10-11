@@ -40,10 +40,7 @@ using namespace std;
 using namespace TagLib;
 using TagLib::uint;
 
-#include "optionhandler.h"
-
 extern const char *command;
-extern OptionHandler options;
 
 typedef enum _ID3v2FrameID {
 	FID3_XXXX,  /* Unknown frame */

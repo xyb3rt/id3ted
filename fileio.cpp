@@ -8,7 +8,6 @@
 
 #include <taglib/tfile.h>
 
-#include "id3ted.h"
 #include "fileio.h"
 
 #ifdef NO_STR_BASENAME
