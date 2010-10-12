@@ -27,6 +27,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
+#include <sstream>
 
 #include "lametag.h"
 #include "fileio.h"
@@ -131,23 +132,17 @@ LameTag::LameTag(const char *_filename, long _frameOffset, long _frameLength) :
 	valid = true;
 }
 
-void LameTag::print(ostringstream &out, bool checkCRC) {
-	const uint bufSize = 32;
-	char buf[bufSize];
+void LameTag::print(bool checkCRC) {
+	if (!valid)
+		return;
+
 	ostringstream tmp;
-
-	ios::fmtflags oldFlags = out.flags();
-	streamsize oldWidth = out.width();
-	char oldFillChar = out.fill();
-
-	out.setf(ios::left);
-	out.fill(' ');
 	tmp.setf(ios::fixed);
 	tmp.precision(1);
 
-	out << encoder << " tag (revision " << (tagRevision) << "):" << endl;
+	cout << encoder << " tag (revision " << tagRevision << "):" << endl;
 
-	leftKey(out, "encoding method");
+	printf("%-16s: ", "encoding method");
 	switch (encodingMethod) {
 		case 8:
 			tmp << "2-pass ";
@@ -172,19 +167,17 @@ void LameTag::print(ostringstream &out, bool checkCRC) {
 			tmp << "unknown";
 			break;
 	}
-	leftValue(out, tmp.str());
+	printf("%-15s", tmp.str().c_str());
 	tmp.str("");
 
-	rightKey(out, "quality");
-	if (quality > 0 && quality <= 100) {
-		snprintf(buf, bufSize, "V%d/q%d", (100 - quality) / 10,
-				(100 - quality) % 10);
-		rightValue(out, buf);
-	} else {
-		rightValue(out, "unknown");
-	}
+	printf("%-15s: ", "quality");
+	if (quality > 0 && quality <= 100)
+		printf("V%d/q%d", (100 - quality) / 10, (100 - quality) % 10);
+	else
+		cout << "unknown";
+	cout << endl;
 
-	leftKey(out, "stereo mode");
+	printf("%-16s: ", "stereo mode");
 	switch (stereoMode) {
 		case 0:
 			tmp << "mono";
@@ -211,128 +204,111 @@ void LameTag::print(ostringstream &out, bool checkCRC) {
 			tmp << "undefined";
 			break;
 	}
-	leftValue(out, tmp.str());
+	printf("%-15s", tmp.str().c_str());
 	tmp.str("");
 
-	rightKey(out, "source rate");
+	printf("%-15s: ", "source rate");
 	switch (sourceRate) {
 		case 0:
-			tmp << "<= 32";
+			cout << "<= 32";
 			break;
 		case 1:
-			tmp << "44.1";
+			cout << "44.1";
 			break;
 		case 2:
-			tmp << "48";
+			cout << "48";
 			break;
 		default:
-			tmp << "> 48";
+			cout << "> 48";
 			break;
 	}
-	tmp << " kHz";
-	rightValue(out, tmp.str());
-	tmp.str("");
+	cout << " kHz" << endl;
 
 	if (encodingMethod == 2 || encodingMethod == 9)
 		tmp << "average ";
 	else if (encodingMethod > 2 && encodingMethod < 7)
 		tmp << "minimal ";
 	tmp << "bitrate";
-	leftKey(out, tmp.str());
+	printf("%-16s: ", tmp.str().c_str());
 	tmp.str("");
 	if (bitrate == 0xFF)
 		tmp << ">= ";
 	tmp << bitrate << " kBit/s";
-	leftValue(out, tmp.str());
+	printf("%-15s", tmp.str().c_str());
 	tmp.str("");
 
-	rightKey(out, "music length");
-	rightValue(out, FileIO::sizeHumanReadable(musicLength));
+	printf("%-15s: ", "music length");
+	cout << FileIO::sizeHumanReadable(musicLength) << endl;
 
-	leftKey(out, "lowpass");
+	printf("%-16s: ", "lowpass");
 	if (lowpassFilter == 0) {
 		tmp << "unknown";
 	} else {
 		tmp << lowpassFilter << "00 Hz";
 	}
-	leftValue(out, tmp.str());
+	printf("%-15s", tmp.str().c_str());
 	tmp.str("");
 
-	rightKey(out, "mp3gain");
-	if (mp3Gain != 0.0) {
-		snprintf(buf, bufSize, "%+.f dB", mp3Gain);
-		rightValue(out, buf);
-	}
-	else {
-		rightValue(out, "none");
-	}
+	printf("%-15s: ", "mp3gain");
+	if (mp3Gain != 0.0)
+		printf("%+.f dB", mp3Gain);
+	else
+		cout << "none" << endl;
 
-	leftKey(out, "ATH type");
+	printf("%-16s: ", "ATH type");
 	tmp << athType;
-	leftValue(out, tmp.str());
+	printf("%-15s", tmp.str().c_str());
 	tmp.str("");
 
-	rightKey(out, "encoding flags");
+	printf("%-15s: ", "encoding flags");
 	bool flag = false;
 	if (encodingFlags & 0x10) {
-		tmp << "nspsytune ";
+		cout << "nspsytune ";
 		flag = true;
 	}
 	if (encodingFlags & 0x20) {
-		tmp << "nssafejoint ";
+		cout << "nssafejoint ";
 		flag = true;
 	}
 	if (encodingFlags & 0xC0) {
-		tmp << "nogap";
+		cout << "nogap";
 		flag = true;
 		if (encodingFlags & 0x80)
-			tmp << "<";
+			cout << "<";
 		if (encodingFlags & 0x40)
-			tmp << ">";
+			cout << ">";
 	}
 	if (!flag)
-		tmp << "none";
-	rightValue(out, tmp.str());
-	tmp.str("");
+		cout << "none";
+	cout << endl;
 
-	leftKey(out, "encoding delay");
+	printf("%-16s: ", "encoding delay");
 	tmp << encodingDelay << " samples";
-	leftValue(out, tmp.str());
+	printf("%-15s", tmp.str().c_str());
 	tmp.str("");
 
-	rightKey(out, "padding");
-	tmp << padding << " samples";
-	rightValue(out, tmp.str());
-	tmp.str("");
+	printf("%-15s: ", "padding");
+	cout << padding << " samples" << endl;
 
-	leftKey(out, "noise shaping");
+	printf("%-16s: ", "noise shaping");
 	tmp << noiseShaping;
-	leftValue(out, tmp.str());
+	printf("%-15s", tmp.str().c_str());
 	tmp.str("");
 
-	rightKey(out, "unwise settings");
-	tmp << (unwiseSettings ? "yes" : "no");
-	rightValue(out, tmp.str());
-	tmp.str("");
+	printf("%-15s: ", "unwise settings");
+	cout << (unwiseSettings ? "yes" : "no") << endl;
 
-	leftKey(out, "info tag CRC");
-	snprintf(buf, bufSize, "%04X ", tagCRC);
-	tmp << buf;
-
+	printf("%-16s: %04X ", "info tag CRC", tagCRC);
 	if (checkCRC) {
 		int size = frameLength < 190 ? frameLength : 190;
 		unsigned short crc = 0;
-
 		crc16Checksum(&crc, frame.data(), size);
 		tmp << "(" << (crc != tagCRC ? "invalid" : "correct") << ")";
 	}
-	leftValue(out, tmp.str());
+	printf("%-10s", tmp.str().c_str());
 	tmp.str("");
 
-	rightKey(out, "music CRC");
-	snprintf(buf, bufSize, "%04X ", musicCRC);
-	tmp << buf;
-
+	printf("%-15s: %04X", "music CRC", musicCRC);
 	if (checkCRC) {
 		unsigned short crc = 0;
 		size_t size = musicLength - frameLength;
@@ -355,55 +331,21 @@ void LameTag::print(ostringstream &out, bool checkCRC) {
 				crc16LastBlock(&crc, buffer, blockSize);
 			}
 		}
-
 		delete [] buffer;
-		tmp << "(" << (crc != musicCRC ? "invalid" : "correct") << ")";
+		cout << " (" << (crc != musicCRC ? "invalid" : "correct") << ")";
 	}
-	rightValue(out, tmp.str());
+	cout << endl;
+
+	printf("%-16s: ", "ReplayGain: peak");
+	cout << (int) peakSignal * 100 << endl;
+
+	printf("%-16s: ", "track gain");
+	tmp << (trackGain > 0.0 ? "+" : "") << trackGain << " dB";
+	printf("%-15s", tmp.str().c_str());
 	tmp.str("");
 
-	leftKey(out, "ReplayGain: peak");
-	tmp << (int) peakSignal * 100;
-	rightValue(out, tmp.str());
-	tmp.str("");
-
-	leftKey(out, "track gain");
-	if (trackGain > 0.0)
-		tmp << "+";
-	tmp << trackGain << " dB";
-	leftValue(out, tmp.str());
-	tmp.str("");
-
-	rightKey(out, "album gain");
-	if (albumGain > 0.0)
-		tmp << "+";
-	tmp << albumGain << " dB";
-	rightValue(out, tmp.str());
-	tmp.str("");
-
-	out.flags(oldFlags);
-	out.width(oldWidth);
-	out.fill(oldFillChar);
-}
-
-void LameTag::leftKey(ostringstream &out, const string &key) {
-	out.width(16);
-	out << key << ": ";
-}
-
-void LameTag::leftValue(ostringstream &out, const string &value) {
-	out.width(15);
-	out << value;
-}
-
-void LameTag::rightKey(ostringstream &out, const string &key) {
-	out.width(15);
-	out << key << ": ";
-}
-
-void LameTag::rightValue(ostringstream &out, const string &value) {
-	out.width(1);
-	out << value << endl;
+	printf("%-15s: ", "album gain");
+	cout << (albumGain > 0.0 ? "+" : "") << albumGain << " dB" << endl;
 }
 
 double LameTag::replayGain(const ByteVector &gainData, bool oldVersion) {

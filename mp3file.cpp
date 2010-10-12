@@ -72,6 +72,18 @@ MP3File::~MP3File() {
 		delete lameTag;
 }
 
+bool MP3File::hasLameTag() const {
+	return lameTag != NULL && lameTag->isValid();
+}
+
+bool MP3File::hasID3v1Tag() const {
+	return id3v1Tag != NULL && !id3v1Tag->isEmpty();
+}
+
+bool MP3File::hasID3v2Tag() const {
+	return id3v1Tag != NULL && !id3v2Tag->isEmpty();
+}
+
 void MP3File::apply(GenericInfo *info) {
 	if (info == NULL)
 		return;
@@ -198,8 +210,11 @@ void MP3File::apply(FrameInfo *info) {
 			}
 		}
 	} else if (info->fid() != FID3_APIC) {
-		// overwrite matching frame
-		frameList.front()->setText(info->text());
+		if (!info->text().isEmpty())
+			// overwrite matching frame
+			frameList.front()->setText(info->text());
+		else
+			id3v2Tag->removeFrame(frameList.front());
 	}
 }
 
@@ -237,7 +252,7 @@ void MP3File::showInfo() const {
 	MPEG::Properties *properties;
 	const char *version;
 	const char *channelMode;
-	
+
 	if (!file.isValid())
 		return;
 
@@ -282,7 +297,7 @@ void MP3File::showInfo() const {
 void MP3File::printLameTag(bool checkCRC) const {
 	if (!file.isValid())
 		return;
-	
+
 	if (lameTag != NULL)
 		lameTag->print(checkCRC);
 }
@@ -334,8 +349,7 @@ void MP3File::listID3v2Tag(bool withDesc) const {
 						dynamic_cast<ID3v2::AttachedPictureFrame*>(*frame);
 				if (apic != NULL) {
 					int size = apic->picture().size();
-					cout << apic->mimeType() << ", ";
-					FileIO::printSizeHumanReadable(size);
+					cout << apic->mimeType() << ", " << FileIO::sizeHumanReadable(size);
 				}
 				break;
 			}
@@ -416,7 +430,7 @@ vector<ID3v2::Frame*> MP3File::find(FrameInfo *info) {
 
 	if (id3v2Tag == NULL || info == NULL)
 		return list;
-
+	
 	ID3v2::FrameList frameList = id3v2Tag->frameListMap()[info->id()];
 	ID3v2::FrameList::ConstIterator each = frameList.begin();
 

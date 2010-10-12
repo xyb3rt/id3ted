@@ -17,7 +17,6 @@
  */
 
 #include <iostream>
-#include <sstream>
 #include <cstdlib>
 #include <cstring>
 #include <list>
@@ -137,7 +136,13 @@ int main(int argc, char **argv) {
 
 		// print out requested information
 		if (Options::showInfo || Options::listTags || Options::printLameTag) {
-			cout << filename << ":" << endl;
+			if (Options::fileCount > 1 && (Options::showInfo || 
+					(Options::listTags && (file.hasID3v1Tag() || file.hasID3v2Tag())) ||
+					(Options::printLameTag && file.hasLameTag()))) {
+				if (fileIdx > 0)
+					cout << endl;
+				cout << filename << ":" << endl;
+			}
 			if (Options::showInfo)
 				file.showInfo();
 			if (Options::printLameTag)
@@ -146,8 +151,6 @@ int main(int argc, char **argv) {
 				file.listID3v1Tag();
 				file.listID3v2Tag(Options::listV2WithDesc);
 			}
-			if (fileIdx < Options::fileCount - 1)
-				cout << endl;
 		}
 
 		// organize file in directory structure defined by pattern

@@ -20,6 +20,7 @@
 #ifndef __MP3FILE_H__
 #define __MP3FILE_H__
 
+#include <sstream>
 #include <vector>
 
 #include <taglib/mpegfile.h>
@@ -38,6 +39,10 @@ class MP3File {
 		bool isValid() const { return file.isValid(); }
 		bool isReadOnly() const { return file.readOnly(); }
 		const char* filename() const { return file.name(); }
+
+		bool hasLameTag() const;
+		bool hasID3v1Tag() const;
+		bool hasID3v2Tag() const;
 
 		void apply(GenericInfo*);
 		void apply(FrameInfo*);

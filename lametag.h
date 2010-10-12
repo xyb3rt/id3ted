@@ -20,8 +20,6 @@
 #ifndef __LAMETAG_H__
 #define __LAMETAG_H__
 
-#include <sstream>
-
 #include <taglib/tbytevector.h>
 #include <taglib/tstring.h>
 
@@ -31,14 +29,10 @@ class LameTag {
 	public:
 		LameTag(const char*, long, long);
 
-		void print(ostringstream&, bool);
+		bool isValid() const { return valid; }
+		void print(bool);
 
 	private:
-		void leftKey(ostringstream&, const string&);
-		void leftValue(ostringstream&, const string&);
-		void rightKey(ostringstream&, const string&);
-		void rightValue(ostringstream&, const string&);
-
 		double replayGain(const ByteVector&, bool);
 
 		/* calculate the crc16 checksum of a large chunk of data blockwise:
