@@ -25,7 +25,7 @@
 
 FrameInfo::FrameInfo(const char *id, ID3v2FrameID fid, const char *text) :
 		_id(id), _fid(fid), _text(text, DEF_TSTR_ENC),
-		_description(), _language(), _data()
+		_description(), _language("XXX"), _data()
 {
 	switch (_fid) {
 		case FID3_APIC: {
@@ -81,8 +81,6 @@ void FrameInfo::split3() {
 			len = idx++;
 			if (_description.length() - idx == 3)
 				_language = _description.substr(idx, 3).data(DEF_TSTR_ENC);
-			else
-				_language = "XXX";
 			_description = _description.substr(0, len);
 		}
 	}
