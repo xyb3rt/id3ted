@@ -23,17 +23,22 @@
 #include <sstream>
 
 #include <taglib/tbytevector.h>
+#include <taglib/tstring.h>
 
 #include "id3ted.h"
 
 class LameTag {
 	public:
 		LameTag(const char*, long, long);
-		~LameTag();
 
 		void print(ostringstream&, bool);
 
 	private:
+		void leftKey(ostringstream&, const string&);
+		void leftValue(ostringstream&, const string&);
+		void rightKey(ostringstream&, const string&);
+		void rightValue(ostringstream&, const string&);
+
 		double replayGain(const ByteVector&, bool);
 
 		/* calculate the crc16 checksum of a large chunk of data blockwise:
@@ -51,24 +56,29 @@ class LameTag {
 		static unsigned short crc16Table[];
 		
 		bool valid;
+		const char *filename;
+		long frameOffset;
+		long frameLength;
+		ByteVector frame;
+
 		String encoder;
-		char tagRevision;
+		short tagRevision;
 		int encodingMethod;
 		int quality;
-		char stereoMode;
-		char sourceRate;
-		unsigned char bitrate;
+		short stereoMode;
+		short sourceRate;
+		unsigned short bitrate;
 		unsigned int musicLength;
-		char lowpassFilter;
+		short lowpassFilter;
 		float mp3Gain;
-		char athType;
-		char encodingFlags;
+		short athType;
+		short encodingFlags;
 		int encodingDelay;
 		int padding;
-		char noiseShaping;
+		short noiseShaping;
 		bool unwiseSettings;
-		unsigned char lameTagCRC;
-		unsigned char musicCRC;
+		unsigned short tagCRC;
+		unsigned short musicCRC;
 		float peakSignal;
 		double trackGain;
 		double albumGain;
