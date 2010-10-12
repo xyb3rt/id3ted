@@ -20,6 +20,8 @@
 #ifndef __LAMETAG_H__
 #define __LAMETAG_H__
 
+#include <sstream>
+
 #include <taglib/tbytevector.h>
 
 #include "id3ted.h"
@@ -29,7 +31,7 @@ class LameTag {
 		LameTag(const char*, long, long);
 		~LameTag();
 
-		void print(bool);
+		void print(ostringstream&, bool);
 
 	private:
 		double replayGain(const ByteVector&, bool);
@@ -50,12 +52,13 @@ class LameTag {
 		
 		bool valid;
 		String encoder;
+		char tagRevision;
 		int encodingMethod;
 		int quality;
 		char stereoMode;
 		char sourceRate;
 		unsigned char bitrate;
-		int musicLength;
+		unsigned int musicLength;
 		char lowpassFilter;
 		float mp3Gain;
 		char athType;
