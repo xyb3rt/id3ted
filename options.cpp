@@ -11,20 +11,6 @@
 #include "frametable.h"
 #include "options.h"
 
-int Options::tagsToWrite = 0;
-int Options::tagsToStrip = 0;
-bool Options::writeFile = false;
-bool Options::extractAPICs = false;
-bool Options::showInfo = false;
-bool Options::listTags = false;
-bool Options::listV2WithDesc = false;
-bool Options::printLameTag = false;
-bool Options::checkLameCRC = false;
-bool Options::forceOverwrite = false;
-char Options::fieldDelimiter = FIELD_DELIM;
-bool Options::preserveTimes = false;
-bool Options::moveFiles = false;
-
 bool Options::parseCommandLine(int argc, char **argv) {
 	int opt;
 	bool error = false;
@@ -416,6 +402,25 @@ void Options::printUsage() {
 	     << "Fields in square brackets are optional, LANGUAGE is an ISO-639-2 3-byte code." << endl;
 }
 
+int Options::tagsToWrite = 0;
+int Options::tagsToStrip = 0;
+bool Options::writeFile = false;
+bool Options::extractAPICs = false;
+bool Options::showInfo = false;
+bool Options::listTags = false;
+bool Options::listV2WithDesc = false;
+bool Options::printLameTag = false;
+bool Options::checkLameCRC = false;
+bool Options::forceOverwrite = false;
+char Options::fieldDelimiter = FIELD_DELIM;
+bool Options::preserveTimes = false;
+bool Options::moveFiles = false;
+vector<GenericInfo*> Options::genericMods;
+vector<char*> Options::framesToRemove;
+vector<FrameInfo*> Options::framesToModify;
+uint Options::fileCount = 0;
+char **Options::filenames = NULL;
+
 const char* Options::options = "hvpd:a:A:t:c:g:T:y:ilLmMr:DsS123n:N:o:xf";
 const struct option Options::longOptions[] = {
   /* help, general info & others */
@@ -549,4 +554,5 @@ const struct option Options::longOptions[] = {
   { "WXXX", required_argument, &Options::optFrameID, FID3_WXXX },
   { 0, 0, 0, 0 },
 };
+int Options::optFrameID = 0;
 
