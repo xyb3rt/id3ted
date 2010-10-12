@@ -1,6 +1,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <errno.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -61,6 +62,18 @@ bool FileIO::exists(const char *path) {
 	return access(path, F_OK);
 }
 
+bool FileIO::isRegular(const char *path) {
+	struct stat stats;
+
+	if (stat(path, &stats) == -1) {
+		cerr << command << ": " << path << ": Could not stat file" << endl;
+		return false;
+	}
+
+	return S_ISREG(stats.st_mode);
+}
+
+
 bool FileIO::isReadable(const char *path) {
 	return TagLib::File::isReadable(path);
 }
@@ -69,10 +82,13 @@ bool FileIO::isWritable(const char *path) {
 	return TagLib::File::isWritable(path);
 }
 
-String FileIO::sizeHumanReadable(unsigned long size) {
+string FileIO::sizeHumanReadable(unsigned long size) {
 	float size_hr = size;
 	const char *unit = NULL;
-	char buffer[64];
+	ostringstream ret;
+
+	ret.setf(ios::fixed);
+	ret.precision(2);
 
 	if (size_hr >= 1024) {
 		size_hr /= 1024;
@@ -88,11 +104,11 @@ String FileIO::sizeHumanReadable(unsigned long size) {
 	}
 
 	if (size != size_hr)
-		sprintf(buffer, "%.2f %s (%lu bytes)", size_hr, unit, size);
+		ret << size_hr << " " << unit << " (" << size << " bytes)";
 	else
-		sprintf(buffer, "%lu bytes", size);
+		ret << size << " bytes";
 
-	return String(buffer, DEF_TSTR_ENC);
+	return ret.str();
 }
 
 const char* FileIO::mimetype(const char *file) {
@@ -213,6 +229,8 @@ FileIO::FileIO(const char *_path, const char *_mode) :
 		perror(NULL);
 	}
 }
+
+FileIO::~FileIO() {}
 
 int FileIO::close() {
 	int error;

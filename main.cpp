@@ -58,18 +58,11 @@ int main(int argc, char **argv) {
 		bool preserveTimes = Options::preserveTimes &&
 				FileIO::saveTimes(filename, ptimes);
 
-		/*struct stat stats;
-		if (stat(filename, &stats) == -1) {
-			cerr << command << ": " << filename << ": Could not stat file" << endl;
-			retCode |= 4;
-			continue;
-		}
-
-		if (!S_ISREG(stats.st_mode)) {
+		if (!FileIO::isRegular(filename)) {
 			cerr << command << ": " << filename << ": Not a regular file" << endl;
 			retCode |= 4;
 			continue;
-		}*/
+		}
 
 		if (!FileIO::isReadable(filename)) {
 			cerr << command << ": " << filename
@@ -100,8 +93,8 @@ int main(int argc, char **argv) {
 			}
 		}*/
 
-		if (Options::extractAPICs)
-			file.extractAPICs(Options::forceOverwrite);
+		/*if (Options::extractAPICs)
+			file.extractAPICs(Options::forceOverwrite);*/
 
 		// delete id3v2 frames with given frame ids
 		if (Options::framesToRemove.size() > 0 && Options::tagsToStrip & 2) {

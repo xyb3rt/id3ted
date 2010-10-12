@@ -24,7 +24,6 @@
 #include <sys/time.h>
 
 #include <taglib/tbytevector.h>
-#include <taglib/tstring.h>
 
 #include "id3ted.h"
 
@@ -39,9 +38,10 @@ class FileIO {
 		static const char* basename(const char*);
 #endif	
 		static bool exists(const char*);
+		static bool isRegular(const char*);
 		static bool isReadable(const char*);
 		static bool isWritable(const char*);
-		static String sizeHumanReadable(unsigned long);
+		static string sizeHumanReadable(unsigned long);
 		static const char* mimetype(const char*);
 		static bool saveTimes(const char*, FileTimes&);
 		static bool resetTimes(const char*, const FileTimes&);
