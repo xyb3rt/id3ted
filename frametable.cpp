@@ -218,7 +218,7 @@ void FrameTable::listFrames() {
 	     << "     long option to set the content of the frame to the option argument." << endl;
 }
 
-void listGenres() {
+void FrameTable::listGenres() {
 	for (uint i = 0; i < ID3v1::genreList().size(); i++) {
 		printf("  %5d: ", i);
 		cout << ID3v1::genre(i) << endl;
