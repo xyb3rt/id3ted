@@ -17,7 +17,9 @@
  */
 
 #include <iostream>
+#include <sstream>
 #include <cstdio>
+#include <cstring>
 
 #include <taglib/tstring.h>
 #include <taglib/id3v1tag.h>
@@ -422,6 +424,55 @@ void MP3File::listID3v2Tag(bool withDesc) const {
 				break;
 		}
 		cout << endl;
+	}
+}
+
+void MP3File::extractAPICs(bool overwrite) const {
+	if (!file.isValid() || id3v2Tag == NULL)
+		return;
+
+	int num = 0;
+	const char *name = basename(file.name());
+	const char *mimetype, *filetype;
+	ostringstream filename;
+
+	ID3v2::FrameList apicList = id3v2Tag->frameListMap()["APIC"];
+	ID3v2::FrameList::ConstIterator each = apicList.begin();
+
+	for (; each != apicList.end(); ++each) {
+		ID3v2::AttachedPictureFrame *apic =
+				dynamic_cast<ID3v2::AttachedPictureFrame*>(*each);
+		if (apic == NULL)
+			continue;
+
+		mimetype = apic->mimeType().toCString();
+		if (mimetype != NULL && strlen(mimetype) > 0) {
+			filetype = strrchr(mimetype, '/');
+			if (filetype != NULL && strlen(filetype+1) > 0)
+				++filetype;
+			else
+				filetype = mimetype;
+		} else {
+			filetype = "bin";
+		}
+
+		filename.str("");
+		filename << name << ".apic-" << (++num < 10 ? "0" : "");
+		filename << num << "." << filetype;
+
+		if (FileIO::exists(filename.str().c_str())) {
+			if (!overwrite && !FileIO::confirmOverwrite(filename.str().c_str()))
+				continue;
+		}
+
+		OFile outFile(filename.str().c_str());
+		if (!outFile.isOpen())
+			continue;
+
+		outFile.write(apic->picture());
+		if (outFile.error())
+			cerr << command << ": " << filename.str()
+			     << ": Error writing file" << endl;
 	}
 }
 

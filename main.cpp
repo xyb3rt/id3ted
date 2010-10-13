@@ -92,8 +92,8 @@ int main(int argc, char **argv) {
 			}
 		}*/
 
-		/*if (Options::extractAPICs)
-			file.extractAPICs(Options::forceOverwrite);*/
+		if (Options::extractAPICs)
+			file.extractAPICs(Options::forceOverwrite);
 
 		// delete id3v2 frames with given frame ids
 		if (Options::framesToRemove.size() > 0 && Options::tagsToStrip & 2) {

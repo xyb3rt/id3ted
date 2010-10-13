@@ -20,7 +20,6 @@
 #ifndef __MP3FILE_H__
 #define __MP3FILE_H__
 
-#include <sstream>
 #include <vector>
 
 #include <taglib/mpegfile.h>

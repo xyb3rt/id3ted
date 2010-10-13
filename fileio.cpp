@@ -59,7 +59,7 @@ const char* FileIO::basename(const char *path) {
 #endif /* NO_STR_BASENAME */
 
 bool FileIO::exists(const char *path) {
-	return access(path, F_OK);
+	return !access(path, F_OK);
 }
 
 bool FileIO::isRegular(const char *path) {
