@@ -1,3 +1,21 @@
+/* id3ted: options.cpp
+ * Copyright (c) 2010 Bert Muennich <muennich at informatik.hu-berlin.de>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *  
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
 #include <cstring>
 #include <cstdlib>
 
@@ -105,11 +123,11 @@ bool Options::parseCommandLine(int argc, char **argv) {
 				writeFile = true;
 				break;
 			case '1':
-				tagsToWrite |= 1;
+				tagsToWrite = 1;
 				writeFile = true;
 				break;
 			case '2':
-				tagsToWrite |= 2;
+				tagsToWrite = 2;
 				writeFile = true;
 				break;
 			case '3':
@@ -117,146 +135,10 @@ bool Options::parseCommandLine(int argc, char **argv) {
 				writeFile = true;
 				break;
 			/* filename <-> tag information */
-			/*case 'N':
-			case 'n': {
-				if (fPathRegEx != NULL) {
-					multOptWarning.push_back("n");
-					break;
-				}
-
-				fPathRegEx = (regex_t*) s_malloc(sizeof(regex_t));
-				ostringstream regExPattern;
-				bool wcardPresent = false;
-
-				for (uint i = 0; i < strlen(optarg) && fPathRegEx != NULL; i++) {
-					if (optarg[i] == '%') {
-						if (i + 1 >= strlen(optarg)) {
-							cerr << g_progname << ": -" << (char) opt << " option ignored, because pattern ends with an invalid character" << endl;
-							free(fPathRegEx);
-							fPathRegEx = NULL;
-							break;
-						}
-
-						const char *textFID;
-						FrameInfo *newFI;
-
-						switch (optarg[i+1]) {
-							case 'a': {
-								textFID = FrameTable::textFrameID(FID3_TPE1);
-								newFI = new FrameInfo(textFID, FID3_TPE1, "", fPathNMatch++);
-								regExPattern << "(.+)";
-								wcardPresent = true;
-								break;
-							}
-							case 'A': {
-								textFID = FrameTable::textFrameID(FID3_TALB);
-								newFI = new FrameInfo(textFID, FID3_TALB, "", fPathNMatch++);
-								regExPattern << "(.+)";
-								wcardPresent = true;
-								break;
-							}
-							case 't': {
-								textFID = FrameTable::textFrameID(FID3_TIT2);
-								newFI = new FrameInfo(textFID, FID3_TIT2, "", fPathNMatch++);
-								regExPattern << "(.+)";
-								wcardPresent = true;
-								break;
-							}
-							case 'g': {
-								textFID = FrameTable::textFrameID(FID3_TCON);
-								newFI = new FrameInfo(textFID, FID3_TCON, "", fPathNMatch++);
-								regExPattern << "(.+)";
-								wcardPresent = true;
-								break;
-							}
-							case 'y': {
-								textFID = FrameTable::textFrameID(FID3_TDRC);
-								newFI = new FrameInfo(textFID, FID3_TDRC, "", fPathNMatch++);
-								regExPattern << "([0-9]+)";
-								wcardPresent = true;
-								break;
-							}
-							case 'n': {
-								textFID = FrameTable::textFrameID(FID3_TRCK);
-								newFI = new FrameInfo(textFID, FID3_TRCK, "", fPathNMatch++);
-								regExPattern << "([0-9]+)";
-								wcardPresent = true;
-								break;
-							}
-							case 'd': {
-								textFID = FrameTable::textFrameID(FID3_TPOS);
-								newFI = new FrameInfo(textFID, FID3_TPOS, "", fPathNMatch++);
-								regExPattern << "([0-9]+)";
-								wcardPresent = true;
-								break;
-							}
-							case '%': {
-								regExPattern << "%";
-								i++;
-								continue;
-							}
-							default: {
-								cerr << g_progname << ": -" << (char) opt << " option ignored, because pattern contains invalid wildcard: `" << optarg[i] << optarg[i+1] << "'" << endl;
-								free(fPathRegEx);
-								fPathRegEx = NULL;
-								continue;
-							}
-						}
-
-						if (fPathRegEx != NULL && optarg[i+1] != '%' && pre_backslash_cnt(optarg, i) % 2 == 1) {
-							cerr << g_progname << ": -" << (char) opt << " option ignored, because pattern contains escaped wildcard: `" << optarg[i-1] << optarg[i] << optarg[i+1] << "'" << endl;
-							free(fPathRegEx);
-							fPathRegEx = NULL;
-							break;
-						}
-
-						if (newFI->sameFIDIn(framesToModify)) {
-							multOptWarning.push_back(textFID);
-							delete newFI;
-						} else {
-							framesToModify.push_back(newFI);
-							writeFile = true;
-						}
-
-						i++;
-					} else {
-						if (opt == 'n') {
-							if (strchr("\\*+?.^$[]{}()", optarg[i])) {
-								regExPattern << '\\';
-							}
-						} else {
-							if (optarg[i] == '(' && pre_backslash_cnt(optarg, i) % 2 == 0) {
-								// although its match is never used, we have to count this subexpression
-								fPathNMatch++;
-							}
-						}
-
-						regExPattern << optarg[i];
-					}
-				}
-
-				if (fPathRegEx == NULL) {
-					break;
-				}
-
-				if (!wcardPresent) {
-					cerr << g_progname << ": -" << (char) opt << " option ignored, because pattern does not contain any wildcard" << endl;
-					free(fPathRegEx);
-					fPathRegEx = NULL;
-					break;
-				}
-
-				if (regcomp(fPathRegEx, regExPattern.str().c_str(), REG_EXTENDED) || fPathRegEx->re_nsub != fPathNMatch - 1) {
-					cerr << g_progname << ": error compiling regex for pattern, -" << (char) opt << " option ignored" << endl;
-					free(fPathRegEx);
-					fPathRegEx = NULL;
-					break;
-				}
-
-				g_fPathPMatch = (regmatch_t*) s_malloc(sizeof(regmatch_t) * fPathNMatch);
-
+			case 'N':
+			case 'n':
+				filenameToTag = filePattern.setPattern(optarg, opt == 'N');
 				break;
-			}*/
 			/*case 'o':
 				if (orgPattern == NULL) {
 					orgPattern = optarg;
@@ -287,7 +169,6 @@ bool Options::parseCommandLine(int argc, char **argv) {
 					break;
 				}
 				framesToModify.push_back(info);
-				tagsToWrite |= 2;
 				writeFile = true;
 				break;
 			}
@@ -305,12 +186,12 @@ bool Options::parseCommandLine(int argc, char **argv) {
 		}
 		if (tagsToWrite == 1 && framesToModify.size() > 0) {
 			cerr << command << ": conflicting options: -1, --"
-			     << framesToModify[0]->fid() << endl;
+			     << framesToModify[0]->id() << endl;
 			error = true;
 		}
 		if (tagsToStrip & 2 && framesToModify.size() > 0) {
 			cerr << command << ": conflicting options: strip id3v2 tag, --"
-			     << framesToModify[0]->fid() << endl;
+			     << framesToModify[0]->id() << endl;
 			error = true;
 		}
 		if (tagsToStrip & tagsToWrite) {
@@ -327,6 +208,10 @@ bool Options::parseCommandLine(int argc, char **argv) {
 			error = true;
 		}
 	}
+
+	if ((framesToModify.size() > 0 || filePattern.needsID3v2()) &&
+			tagsToWrite == 0)
+		tagsToWrite = 2;
 
 	return error;
 }
@@ -415,6 +300,8 @@ bool Options::forceOverwrite = false;
 char Options::fieldDelimiter = FIELD_DELIM;
 bool Options::preserveTimes = false;
 bool Options::moveFiles = false;
+bool Options::filenameToTag = false;
+Pattern Options::filePattern;
 vector<GenericInfo*> Options::genericMods;
 vector<char*> Options::framesToRemove;
 vector<FrameInfo*> Options::framesToModify;

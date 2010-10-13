@@ -220,6 +220,32 @@ void MP3File::apply(FrameInfo *info) {
 	}
 }
 
+void MP3File::apply(const MatchInfo &info) {
+	if (!file.isValid() || file.readOnly())
+		return;
+	if (info.id == 0 || info.text.length() == 0)
+		return;
+
+	switch (info.id) {
+		case 'a':
+		case 'A':
+		case 't':
+		case 'c':
+		case 'g':
+		case 'T':
+		case 'y': {
+			GenericInfo genInfo(info.id, info.text.c_str());
+			apply(&genInfo);
+		}
+		case 'd': {
+			if (id3v2Tag != NULL) {
+				FrameInfo frameInfo("TPOS", FID3_TPOS, info.text.c_str());
+				apply(&frameInfo);
+			}
+		}
+	}
+}
+
 void MP3File::removeFrames(const char *textFID) {
 	if (textFID == NULL)
 		return;

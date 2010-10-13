@@ -30,6 +30,7 @@
 #include "frametable.h"
 #include "mp3file.h"
 #include "options.h"
+#include "pattern.h"
 
 const char *command;
 
@@ -83,14 +84,11 @@ int main(int argc, char **argv) {
 			continue;
 		}
 
-		/*if (filenameToTag) {
-			// match filename regex pattern on file,
-			// because we have to extract tag information from filepath
-			if (regexec(fPathRegEx, file, fPathNMatch, g_fPathPMatch, 0)) {
-				cout << file << ": pattern does not match filename" << endl;
-				filenameToTag = false;
-			}
-		}*/
+		if (Options::filenameToTag) {
+			uint matches = Options::filePattern.match(filename);
+			for (uint i = 0; i < matches; ++i)
+				file.apply(Options::filePattern.getMatch(i));
+		}
 
 		if (Options::extractAPICs)
 			file.extractAPICs(Options::forceOverwrite);

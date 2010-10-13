@@ -29,6 +29,7 @@
 #include "id3ted.h"
 #include "frameinfo.h"
 #include "genericinfo.h"
+#include "pattern.h"
 
 enum LongOptOnly {
 	OPT_LO_FRAME_LIST = 128,
@@ -50,8 +51,9 @@ class Options {
 		static bool forceOverwrite;               // -f
 		static char fieldDelimiter;               // -d
 		static bool preserveTimes;                // -p
-		/* TODO: Patterns */
 		static bool moveFiles;                    // --move
+		static bool filenameToTag;                // -[nN]
+		static Pattern filePattern;               // -[nN]
 		static vector<GenericInfo*> genericMods;  // -[aAtcgTy]
 		static vector<char*> framesToRemove;      // -r
 		static vector<FrameInfo*> framesToModify; // --FID

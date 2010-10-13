@@ -29,6 +29,7 @@
 #include "frameinfo.h"
 #include "genericinfo.h"
 #include "lametag.h"
+#include "pattern.h"
 
 class MP3File {
 	public:
@@ -45,6 +46,7 @@ class MP3File {
 
 		void apply(GenericInfo*);
 		void apply(FrameInfo*);
+		void apply(const MatchInfo&);
 		void removeFrames(const char*);
 		bool save();
 		bool strip(int);
