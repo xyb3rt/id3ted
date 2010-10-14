@@ -138,6 +138,7 @@ bool Options::parseCommandLine(int argc, char **argv) {
 			case 'N':
 			case 'n':
 				filenameToTag = filePattern.setPattern(optarg, opt == 'N');
+				writeFile = true;
 				break;
 			/*case 'o':
 				if (orgPattern == NULL) {

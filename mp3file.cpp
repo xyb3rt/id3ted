@@ -35,7 +35,7 @@
 #include "fileio.h"
 #include "frametable.h"
 
-MP3File::MP3File(const char *filename, int _tags, bool lame) : 
+MP3File::MP3File(const char *filename, int _tags, bool lame) :
 		file(filename), id3Tag(NULL), id3v1Tag(NULL), id3v2Tag(NULL),
 		lameTag(NULL), tags(_tags) {
 	if (file.isValid()) {
@@ -236,12 +236,14 @@ void MP3File::apply(const MatchInfo &info) {
 		case 'y': {
 			GenericInfo genInfo(info.id, info.text.c_str());
 			apply(&genInfo);
+			break;
 		}
 		case 'd': {
 			if (id3v2Tag != NULL) {
 				FrameInfo frameInfo("TPOS", FID3_TPOS, info.text.c_str());
 				apply(&frameInfo);
 			}
+			break;
 		}
 	}
 }

@@ -42,6 +42,7 @@ const char *command;
  */
 int main(int argc, char **argv) {
 	int retCode = 0;
+	bool firstOutput = true;
 
 	command = basename(argv[0]);
 	if (strcmp(command, ".") == 0)
@@ -137,8 +138,10 @@ int main(int argc, char **argv) {
 			if (Options::fileCount > 1 && (Options::showInfo || 
 					(Options::listTags && (file.hasID3v1Tag() || file.hasID3v2Tag())) ||
 					(Options::printLameTag && file.hasLameTag()))) {
-				if (fileIdx > 0)
+				if (!firstOutput)
 					cout << endl;
+				else
+					firstOutput = false;
 				cout << filename << ":" << endl;
 			}
 			if (Options::showInfo)

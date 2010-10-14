@@ -134,7 +134,7 @@ uint Pattern::match(const char *filename) {
 			matches.push_back("");
 		else
 			matches.push_back(path.substr(pmatch[i].rm_so,
-					pmatch[i].rm_eo = pmatch[i].rm_so));
+					pmatch[i].rm_eo - pmatch[i].rm_so));
 	}
 
 	assert(subExpCnt == ids.size()); // DEBUG
