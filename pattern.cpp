@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <cassert> // DEBUG
 #include <iostream>
 #include <sstream>
 #include <cstring>
@@ -71,7 +70,7 @@ bool Pattern::setPattern(const char *text, bool isRE) {
 			}
 			ids.push_back(text[++i]);
 		} else {
-			if (isRE) {
+			if (!isRE) {
 				if (strchr("\\*+?.^$[]{}()", text[i]))
 					tmp << '\\';
 			} else {
@@ -136,9 +135,6 @@ uint Pattern::match(const char *filename) {
 			matches.push_back(path.substr(pmatch[i].rm_so,
 					pmatch[i].rm_eo - pmatch[i].rm_so));
 	}
-
-	assert(subExpCnt == ids.size()); // DEBUG
-	assert(ids.size() == matches.size());
 
 	status = 2;
 
