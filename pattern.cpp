@@ -22,19 +22,38 @@
 
 #include "pattern.h"
 
-bool Pattern::setPattern(const char *text, bool isRE) {
+uint Pattern::count() const {
+	if (status == 0)
+		return 0;
+	else
+		return ids.size();
+}
+
+bool Pattern::needsID3v2() const {
+	if (status == 0)
+		return false;
+	
+	vector<char>::const_iterator id = ids.begin();
+	for (; id != ids.end(); ++id) {
+		if (*id == 'd')
+			return true;
+	}
+
+	return false;
+}
+
+bool IPattern::setPattern(const char *text, bool isRE) {
 	uint i;
 	bool wildcardPresent = false;
 	char flag = isRE ? 'N' : 'n';
 	ostringstream tmp;
 
-	if (status > 0) {
-		subExpCnt = 0;
+	subExpCnt = 0;
+	if (status > 0)
 		regfree(&regex);
-		ids.clear();
-		matches.clear();
-		status = 0;
-	}
+	ids.clear();
+	matches.clear();
+	status = 0;
 
 	for (i = 0; i < strlen(text); ++i) {
 		if (text[i] == '%') {
@@ -63,9 +82,9 @@ bool Pattern::setPattern(const char *text, bool isRE) {
 					tmp << '%';
 					break;
 				default:
-					cerr << command << ": -" << flag << " option ignored, because "
-					     << "pattern contains invalid wildcard: `" << text[i] << text[i+1]
-					     << "'" << endl;
+					cerr << command << ": -" << flag << " option ignored, "
+					     << "because pattern contains invalid wildcard: `"
+					     << text[i] << text[i+1] << "'" << endl;
 					return false;
 			}
 			ids.push_back(text[++i]);
@@ -103,20 +122,7 @@ bool Pattern::setPattern(const char *text, bool isRE) {
 	return true;
 }
 
-bool Pattern::needsID3v2() const {
-	if (status == 0)
-		return false;
-	
-	vector<char>::const_iterator id = ids.begin();
-	for (; id != ids.end(); ++id) {
-		if (*id == 'd')
-			return true;
-	}
-
-	return false;
-}
-
-uint Pattern::match(const char *filename) {
+uint IPattern::match(const char *filename) {
 	if (status == 0)
 		return 0;
 
@@ -137,11 +143,12 @@ uint Pattern::match(const char *filename) {
 	}
 
 	status = 2;
+	delete [] pmatch;
 
 	return subExpCnt;
 }
 
-MatchInfo Pattern::getMatch(uint num) const {
+MatchInfo IPattern::getMatch(uint num) const {
 	MatchInfo info;
 
 	if (status < 2 || num >= ids.size()) {
@@ -155,12 +162,7 @@ MatchInfo Pattern::getMatch(uint num) const {
 	return info;
 }
 
-const char* Pattern::fill(const char *text) {
-	// TODO
-	return NULL;
-}
-
-int Pattern::preBackslashCount(const char *str, uint pos) const {
+int IPattern::preBackslashCount(const char *str, uint pos) const {
 	uint cnt = 0;
 
 	if (pos > strlen(str))
@@ -169,4 +171,85 @@ int Pattern::preBackslashCount(const char *str, uint pos) const {
 		++cnt;
 
 	return cnt;
+}
+
+bool OPattern::setPattern(const char *pattern) {
+	uint i;
+	bool wildcardPresent = false;
+
+	ids.clear();
+	pos.clear();
+	len.clear();
+	status = 0;
+
+	if (strlen(pattern) == 0)
+		return false;
+	
+	if (pattern[strlen(pattern) - 1] == '/') {
+		cerr << command << ": -o option ignored, "
+		     << "because file pattern ends with a slash" << endl;
+		return false;
+	}
+
+	for (i = 0; i < strlen(pattern); ++i) {
+		if (pattern[i] == '%') {
+			if (i+1 >= strlen(pattern)) {
+				cerr << command << ": -o option ignored, "
+				     << "because pattern ends with an invalid character" << endl;
+				return false;
+			}
+			switch (pattern[i+1]) {
+				case 'a':
+				case 'A':
+				case 't':
+				case 'c':
+				case 'g':
+				case 'T':
+				case 'y':
+				case 'd':
+					ids.push_back(pattern[i+1]);
+					pos.push_back(i++);
+					len.push_back(2);
+					break;
+				default:
+					cerr << command << ": -o option ignored, "
+							 << "because pattern contains invalid wildcard: `"
+							 << pattern[i] << pattern[i+1] << "'" << endl;
+					return false;
+			}
+		}
+	}
+
+	if (!wildcardPresent) {
+		cerr << command << ": -o option ignored, "
+		     << "because pattern does not contain any wildcard" << endl;
+		return false;
+	}
+
+	text = pattern;
+	status = 1;
+
+	return true;
+}
+
+MatchInfo OPattern::getMatch(uint num) const {
+	MatchInfo info;
+
+	if (status < 1 || num >= ids.size())
+		info.id = 0;
+	else
+		info.id = ids[num];
+	info.text = "";
+
+	return info;
+}
+
+void OPattern::setMatch(uint num, const MatchInfo &info) {
+	if (status < 1 || num >= ids.size())
+		return;
+	if (info.text.length() == 0)
+		return;
+
+	text.replace(pos[num], len[num], info.text);
+	len[num] = info.text.length();
 }

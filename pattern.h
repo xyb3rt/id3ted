@@ -35,22 +35,41 @@ class Pattern {
 	public:
 		Pattern() : status(0) {}
 
-		bool setPattern(const char*, bool);
 		bool needsID3v2() const;
+		uint count() const;
+		virtual MatchInfo getMatch(uint) const = 0;
+
+	protected:
+		uint status;
+		vector<char> ids;
+};
+
+class IPattern : public Pattern {
+	public:
+		bool setPattern(const char*, bool);
 		uint match(const char*);
 		MatchInfo getMatch(uint) const;
 
-		static const char* fill(const char*);
-
 	private:
-		uint status;
 		string pattern;
 		uint subExpCnt;
 		regex_t regex;
-		vector<char> ids;
 		vector<string> matches;
 
 		int preBackslashCount(const char*, uint) const;
+};
+
+class OPattern : public Pattern {
+	public:
+		bool setPattern(const char*);
+		MatchInfo getMatch(uint) const;
+		void setMatch(uint, const MatchInfo&);
+		const string& getText() const { return text; }
+
+	private:
+		string text;
+		vector<uint> pos;
+		vector<uint> len;
 };
 
 #endif /* __PATTERN_H__ */

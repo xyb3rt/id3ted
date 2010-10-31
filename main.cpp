@@ -86,9 +86,9 @@ int main(int argc, char **argv) {
 		}
 
 		if (Options::filenameToTag) {
-			uint matches = Options::filePattern.match(filename);
+			uint matches = Options::inPattern.match(filename);
 			for (uint i = 0; i < matches; ++i)
-				file.apply(Options::filePattern.getMatch(i));
+				file.apply(Options::inPattern.getMatch(i));
 		}
 
 		if (Options::extractAPICs)

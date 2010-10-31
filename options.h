@@ -53,7 +53,9 @@ class Options {
 		static bool preserveTimes;                // -p
 		static bool moveFiles;                    // --move
 		static bool filenameToTag;                // -[nN]
-		static Pattern filePattern;               // -[nN]
+		static IPattern inPattern;                // -[nN]
+		static bool organize;                     // -o
+		static OPattern outPattern;               // -o
 		static vector<GenericInfo*> genericMods;  // -[aAtcgTy]
 		static vector<char*> framesToRemove;      // -r
 		static vector<FrameInfo*> framesToModify; // --FID

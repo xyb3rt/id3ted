@@ -137,16 +137,12 @@ bool Options::parseCommandLine(int argc, char **argv) {
 			/* filename <-> tag information */
 			case 'N':
 			case 'n':
-				filenameToTag = filePattern.setPattern(optarg, opt == 'N');
+				filenameToTag = inPattern.setPattern(optarg, opt == 'N');
 				writeFile = true;
 				break;
-			/*case 'o':
-				if (orgPattern == NULL) {
-					orgPattern = optarg;
-				} else if (strcmp(orgPattern, optarg) != 0) {
-					multOptWarning.push_back("o");
-				}
-				break;*/
+			case 'o':
+				organize = outPattern.setPattern(optarg);
+				break;
 			case 'x':
 				extractAPICs = true;
 				break;
@@ -210,8 +206,8 @@ bool Options::parseCommandLine(int argc, char **argv) {
 		}
 	}
 
-	if ((framesToModify.size() > 0 || filePattern.needsID3v2()) &&
-			tagsToWrite == 0)
+	if (tagsToWrite == 0 &&
+			(framesToModify.size() > 0 || inPattern.needsID3v2()))
 		tagsToWrite = 2;
 
 	return error;
@@ -302,7 +298,9 @@ char Options::fieldDelimiter = FIELD_DELIM;
 bool Options::preserveTimes = false;
 bool Options::moveFiles = false;
 bool Options::filenameToTag = false;
-Pattern Options::filePattern;
+IPattern Options::inPattern;
+bool Options::organize = false;
+OPattern Options::outPattern;
 vector<GenericInfo*> Options::genericMods;
 vector<char*> Options::framesToRemove;
 vector<FrameInfo*> Options::framesToModify;
