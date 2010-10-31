@@ -210,6 +210,7 @@ bool OPattern::setPattern(const char *pattern) {
 					ids.push_back(pattern[i+1]);
 					pos.push_back(i++);
 					len.push_back(2);
+					wildcardPresent = true;
 					break;
 				default:
 					cerr << command << ": -o option ignored, "
@@ -245,11 +246,19 @@ MatchInfo OPattern::getMatch(uint num) const {
 }
 
 void OPattern::setMatch(uint num, const MatchInfo &info) {
+	int diff;
+	uint newlen, oldlen;
+
 	if (status < 1 || num >= ids.size())
 		return;
-	if (info.text.length() == 0)
-		return;
 
-	text.replace(pos[num], len[num], info.text);
-	len[num] = info.text.length();
+	oldlen = len[num];
+	newlen = info.text.length();
+	diff = newlen - oldlen;
+
+	text.replace(pos[num], oldlen, info.text);
+
+	vector<uint>::iterator each = pos.begin() + num;
+	for (; each != pos.end(); ++each)
+		*each += diff;
 }

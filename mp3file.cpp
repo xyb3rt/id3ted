@@ -248,6 +248,69 @@ void MP3File::apply(const MatchInfo &info) {
 	}
 }
 
+void MP3File::fill(MatchInfo &info) {
+	string &text = info.text;
+	ostringstream tmp;
+
+	tmp.fill('0');
+
+	if (!file.isValid())
+		return;
+	if (info.id == 0)
+		return;
+
+	switch (info.id) {
+		case 'a':
+			text = id3Tag->artist().toCString(USE_UNICODE);
+			if (text.empty())
+				text = "Unknown Artist";
+			break;
+		case 'A':
+			text = id3Tag->album().toCString(USE_UNICODE);
+			if (text.empty())
+				text = "Unknown Album";
+			break;
+		case 't':
+			text = id3Tag->title().toCString(USE_UNICODE);
+			if (text.empty())
+				text = "Unknown Title";
+			break;
+		case 'g':
+			text = id3Tag->genre().toCString(USE_UNICODE);
+			break;
+		case 'y': {
+			uint year = id3Tag->year();
+			if (year) {
+				tmp << year;
+				text = tmp.str();
+			}
+			break;
+		}
+		case 'T': {
+			uint track = id3Tag->track();
+			if (track) {
+				tmp.width(2);
+				tmp << track;
+				text = tmp.str();
+			}
+			break;
+		}
+		case 'd': {
+			if (id3v2Tag != NULL) {
+				ID3v2::FrameList list = id3v2Tag->frameListMap()["TPOS"];
+				if (!list.isEmpty()) {
+					uint disc = list.front()->toString().toInt();
+					if (disc) {
+						tmp << disc;
+						text = tmp.str();
+					}
+				}
+			}
+			break;
+		}
+	}
+}
+
 void MP3File::removeFrames(const char *textFID) {
 	if (textFID == NULL)
 		return;

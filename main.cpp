@@ -155,20 +155,18 @@ int main(int argc, char **argv) {
 		}
 
 		// organize file in directory structure defined by pattern
-		/*if (orgPattern != NULL) {
-			int ret = mp3File.organize(orgPattern, orgMove, forceOverwrite, (preserveTimes ? ptimes : NULL));
-
-			if (ret == 1) {
-				orgPattern = NULL;
-			} else if (ret > 1) {
-				cerr << g_progname << ": " << file << ": Could not organize file" << endl;
-				retCode |= 4;
+		if (Options::organize) {
+			for (int i = Options::outPattern.count() - 1; i >= 0; --i) {
+				MatchInfo minfo = Options::outPattern.getMatch(i);
+				file.fill(minfo);
+				Options::outPattern.setMatch(i, minfo);
 			}
-		}*/
+			// TODO: copy/move file
+		}
 
 		// reset access and modification times to
 		// their old values present before accessing the file:
-		if (preserveTimes && !Options::moveFiles)
+		if (preserveTimes && (!Options::organize || !Options::moveFiles))
 			FileIO::resetTimes(filename, ptimes);
 	}
 

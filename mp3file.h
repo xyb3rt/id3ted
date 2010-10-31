@@ -47,6 +47,7 @@ class MP3File {
 		void apply(GenericInfo*);
 		void apply(FrameInfo*);
 		void apply(const MatchInfo&);
+		void fill(MatchInfo&);
 		void removeFrames(const char*);
 		bool save();
 		bool strip(int);
