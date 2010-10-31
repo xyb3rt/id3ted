@@ -236,6 +236,21 @@ bool FileIO::confirmOverwrite(const char *filename) {
 	return ret;
 }
 
+bool FileIO::copy(const char *from, const char *to) {
+	// TODO
+	return false;
+}
+
+bool FileIO::remove(const char *path) {
+	if (unlink(path)) {
+		fprintf(stderr, "%s: %s: ", command, path);
+		perror(NULL);
+		return false;
+	} else {
+		return true;
+	}
+}
+
 FileIO::FileIO(const char *_path, const char *_mode) :
 		stream(NULL), path(_path), mode(_mode) {
 	if (path == NULL || mode == NULL)

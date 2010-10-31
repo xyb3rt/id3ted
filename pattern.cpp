@@ -257,8 +257,9 @@ void OPattern::setMatch(uint num, const MatchInfo &info) {
 	diff = newlen - oldlen;
 
 	text.replace(pos[num], oldlen, info.text);
+	len[num] = newlen;
 
-	vector<uint>::iterator each = pos.begin() + num;
+	vector<uint>::iterator each = pos.begin() + num + 1;
 	for (; each != pos.end(); ++each)
 		*each += diff;
 }

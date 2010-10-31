@@ -38,7 +38,7 @@ const char *command;
  *   0: everything went fine
  *   1: error allocating memory
  *   2: faulty command line arguments required abort
- *   4: at least one error occured during processing of files
+ *   4: error processing files
  */
 int main(int argc, char **argv) {
 	int retCode = 0;
@@ -94,7 +94,6 @@ int main(int argc, char **argv) {
 		if (Options::extractAPICs)
 			file.extractAPICs(Options::forceOverwrite);
 
-		// delete id3v2 frames with given frame ids
 		if (Options::framesToRemove.size() > 0 && Options::tagsToStrip & 2) {
 			cerr << command << ": -r option ignored, because whole id3v2 tag "
 			     << "gets stripped" << endl;
@@ -108,23 +107,19 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		// applying generic tag information
 		std::vector<GenericInfo*>::const_iterator genInfo =
 				Options::genericMods.begin();
 		for (; genInfo != Options::genericMods.end(); ++genInfo)
 			file.apply(*genInfo);
 
-		// loop through the id3v2 frames for adding/modifying
 		std::vector<FrameInfo*>::const_iterator frameInfo = 
 				Options::framesToModify.begin();
 		for (; frameInfo != Options::framesToModify.end(); ++frameInfo)
 			file.apply(*frameInfo);
 
-		// save the specified tags to the file
 		if (Options::writeFile)
 			file.save();
 
-		// delete whole tag version
 		if (Options::tagsToStrip != 0) {
 			if (!file.strip(Options::tagsToStrip)) {
 				cerr << command << ": " << filename
@@ -133,7 +128,6 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		// print out requested information
 		if (Options::showInfo || Options::listTags || Options::printLameTag) {
 			if (Options::fileCount > 1 && (Options::showInfo || 
 					(Options::listTags && (file.hasID3v1Tag() || file.hasID3v2Tag())) ||
@@ -154,18 +148,25 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		// organize file in directory structure defined by pattern
 		if (Options::organize) {
-			for (int i = Options::outPattern.count() - 1; i >= 0; --i) {
+			for (uint i =0; i < Options::outPattern.count(); ++i) {
 				MatchInfo minfo = Options::outPattern.getMatch(i);
 				file.fill(minfo);
 				Options::outPattern.setMatch(i, minfo);
 			}
-			// TODO: copy/move file
+			string newPath = Options::outPattern.getText();
+			if (!newPath.empty()) {
+				if (!FileIO::copy(filename, newPath.c_str())) {
+					cerr << command << ": " << filename << ": Could not organize file"
+					     << endl;
+					retCode |= 4;
+				} else if (Options::moveFiles) {
+					FileIO::remove(filename);
+					FileIO::resetTimes(newPath.c_str(), ptimes);
+				}
+			}
 		}
 
-		// reset access and modification times to
-		// their old values present before accessing the file:
 		if (preserveTimes && (!Options::organize || !Options::moveFiles))
 			FileIO::resetTimes(filename, ptimes);
 	}

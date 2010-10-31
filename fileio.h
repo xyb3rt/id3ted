@@ -47,6 +47,8 @@ class FileIO {
 		static bool resetTimes(const char*, const FileTimes&);
 		static bool createDir(const char*);
 		static bool confirmOverwrite(const char*);
+		static bool copy(const char*, const char*);
+		static bool remove(const char*);
 
 		FileIO(const char*, const char*);
 		virtual ~FileIO() = 0;
