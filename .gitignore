@@ -1,2 +1,4 @@
 *.o
 id3ted
+cscope.out
+tags
