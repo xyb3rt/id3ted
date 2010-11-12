@@ -161,10 +161,8 @@ int main(int argc, char **argv) {
 					cerr << command << ": " << filename << ": Could not organize file"
 					     << endl;
 					retCode |= 4;
-				} else if (ret == FileIO::Success && Options::moveFiles) {
-					FileIO::remove(filename);
-					if (preserveTimes)
-						FileIO::resetTimes(newPath.c_str(), ptimes);
+				} else if (ret == FileIO::Success && preserveTimes) {
+					FileIO::resetTimes(newPath.c_str(), ptimes);
 				}
 			}
 		}

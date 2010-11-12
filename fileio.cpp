@@ -26,8 +26,12 @@
 #include <magic.h>
 
 #include <taglib/tfile.h>
+#include <taglib/tstring.h>
 
 #include "fileio.h"
+#include "options.h"
+
+#define FILECPY_BUFSIZE 4096
 
 #ifdef __APPLE__
 #define st_atim st_atimespec
@@ -240,7 +244,128 @@ bool FileIO::confirmOverwrite(const char *filename) {
 }
 
 FileIO::Status FileIO::copy(const char *from, const char *to) {
-	// TODO
+	String path(to, DEF_TSTR_ENC);
+
+	path = path.stripWhiteSpace();
+	to = path.toCString(USE_UNICODE);
+
+	if (strcmp(from, to) == 0)
+		return Abort;
+
+	String dirname;
+	const char *directory = NULL;
+	int lastSlash = path.rfind("/");
+
+	if (lastSlash != -1) {
+		dirname = path.substr(0, lastSlash);
+		directory = dirname.toCString(USE_UNICODE);
+	}
+
+	bool sameFS = false;
+	bool create = true;
+	struct stat fromStats, toStats;
+	stat(from, &fromStats);
+
+	if (directory != NULL) {
+		if (access(directory, W_OK) != 0) {
+			if (errno == ENOENT) {
+				if (FileIO::createDir(directory) != Success)
+					return Error;
+			} else {
+				fprintf(stderr, "%s: %s: ", command, directory);
+				perror(NULL);
+				return Error;
+			}
+		}
+
+		stat(directory, &toStats);
+		if (!(toStats.st_mode & S_IFDIR)) {
+			cerr << command << ": " << directory << ": Not a directory" << endl;
+			return Error;
+		}
+
+		if (toStats.st_dev == fromStats.st_dev)
+			sameFS = true;
+	}
+
+	if (stat(to, &toStats) == 0) {
+		/* new file already exists */
+		create = false;
+
+		if (toStats.st_dev == fromStats.st_dev ) {
+			sameFS = true;
+			if (toStats.st_ino == fromStats.st_ino)
+				/* source and dest are the same */
+				return Abort;
+		}
+
+		if (!(toStats.st_mode & S_IFREG)) {
+			cerr << command << ": " << to << ": Not a regular file" << endl;
+			return Error;
+		} else {
+			/* overwrite? */
+			if (access(to, W_OK) != 0) {
+				cerr << command << ": " <<  to << ": Permission denied" << endl;
+				return Error;
+			} else if (!Options::forceOverwrite) {
+				/* have to ask the user if he wants to overwrite the file */
+				if (!FileIO::confirmOverwrite(to)) {
+					return Abort;
+				}
+			}
+		}
+	}
+
+	if (Options::moveFiles && sameFS) {
+		/* simply rename the file */
+		if (rename(from, to) != 0) {
+			cerr << command << ": " << from << ": Could not rename file to: "
+			     << to << endl;
+			return Error;
+		}
+	} else {
+		/* copy file to new position */
+		IFile inFile(from);
+		OFile outFile(to);
+
+		bool error = inFile.error() || outFile.error();
+		char *buf = new char[FILECPY_BUFSIZE];
+		int icnt, ocnt;
+
+		/* copy content of inFile to outFile */
+		while (!inFile.eof() && !error) {
+			icnt = inFile.read(buf, FILECPY_BUFSIZE);
+			if (inFile.error()) {
+				cerr << command << ": " << from << ": Error reading file" << endl;
+				error = true;
+			} else {
+				ocnt = 0;
+				while (ocnt < icnt) {
+					ocnt += outFile.write(buf, icnt - ocnt);
+					if (outFile.error()) {
+						cerr << command << ": " << to << ": Error writing file" << endl;
+						error = true;
+						break;
+					}
+				}
+			}
+		}
+
+		delete [] buf;
+
+		inFile.close();
+		outFile.close();
+
+		if (!error) {
+			if (Options::moveFiles)
+				FileIO::remove(from);
+		} else {
+			if (create && FileIO::exists(to))
+				FileIO::remove(to);
+			return Error;
+		}
+	}
+
 	return Success;
 }
 
