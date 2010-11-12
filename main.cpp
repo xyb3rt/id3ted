@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 		const char *filename = Options::filenames[fileIdx];
 		FileTimes ptimes;
 		bool preserveTimes = Options::preserveTimes &&
-				FileIO::saveTimes(filename, ptimes);
+				FileIO::saveTimes(filename, ptimes) == FileIO::Success;
 
 		if (!FileIO::isRegular(filename)) {
 			cerr << command << ": " << filename << ": Not a regular file" << endl;
@@ -149,20 +149,22 @@ int main(int argc, char **argv) {
 		}
 
 		if (Options::organize) {
-			for (uint i =0; i < Options::outPattern.count(); ++i) {
+			for (uint i = 0; i < Options::outPattern.count(); ++i) {
 				MatchInfo minfo = Options::outPattern.getMatch(i);
 				file.fill(minfo);
 				Options::outPattern.setMatch(i, minfo);
 			}
 			string newPath = Options::outPattern.getText();
 			if (!newPath.empty()) {
-				if (!FileIO::copy(filename, newPath.c_str())) {
+				FileIO::Status ret = FileIO::copy(filename, newPath.c_str());
+				if (ret == FileIO::Error) {
 					cerr << command << ": " << filename << ": Could not organize file"
 					     << endl;
 					retCode |= 4;
-				} else if (Options::moveFiles) {
+				} else if (ret == FileIO::Success && Options::moveFiles) {
 					FileIO::remove(filename);
-					FileIO::resetTimes(newPath.c_str(), ptimes);
+					if (preserveTimes)
+						FileIO::resetTimes(newPath.c_str(), ptimes);
 				}
 			}
 		}

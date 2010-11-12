@@ -34,31 +34,38 @@ typedef struct _FileTimes {
 
 class FileIO {
 	public:
+		enum Status {
+			Success = 0,
+			Abort,
+			Error
+		};
+
 #ifdef NO_STR_BASENAME
 		static const char* basename(const char*);
 #endif	
+
 		static bool exists(const char*);
 		static bool isRegular(const char*);
 		static bool isReadable(const char*);
 		static bool isWritable(const char*);
 		static string sizeHumanReadable(unsigned long);
 		static const char* mimetype(const char*);
-		static bool saveTimes(const char*, FileTimes&);
-		static bool resetTimes(const char*, const FileTimes&);
-		static bool createDir(const char*);
+		static Status saveTimes(const char*, FileTimes&);
+		static Status resetTimes(const char*, const FileTimes&);
+		static Status createDir(const char*);
 		static bool confirmOverwrite(const char*);
-		static bool copy(const char*, const char*);
-		static bool remove(const char*);
+		static Status copy(const char*, const char*);
+		static Status remove(const char*);
 
 		FileIO(const char*, const char*);
 		virtual ~FileIO() = 0;
 
 		bool isOpen() { return stream != NULL; }
-		int close();
+		Status close();
 		bool eof() { return stream != NULL && feof(stream); }
 		bool error() { return stream == NULL || ferror(stream); }
 		long tell();
-		bool seek(long);
+		Status seek(long);
 
 	protected:
 		FILE *stream;

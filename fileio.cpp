@@ -157,51 +157,54 @@ const char* FileIO::mimetype(const char *file) {
 	return mimetype;
 }
 
-bool FileIO::saveTimes(const char *filename, FileTimes &times) {
+FileIO::Status FileIO::saveTimes(const char *filename, FileTimes &times) {
 	struct stat stats;
 
 	if (filename == NULL)
-		return false;
+		return Error;
 	if (stat(filename, &stats) == -1) {
 		cerr << command << ": " << filename << ": Could not stat file" << endl;
-		return false;
+		return Error;
 	}
 	TIMESPEC_TO_TIMEVAL(&times.access, &stats.st_atim);
 	TIMESPEC_TO_TIMEVAL(&times.modification, &stats.st_mtim);
 	
-	return true;
+	return Success;
 }
 
-bool FileIO::resetTimes(const char *filename, const FileTimes &times) {
+FileIO::Status FileIO::resetTimes(const char *filename, const FileTimes &times) {
 	struct timeval ptimes[2];
 
 	if (filename == NULL)
-		return false;
+		return Error;
 	ptimes[0] = times.access;
 	ptimes[1] = times.modification;
 
-	return utimes(filename, ptimes) == 0;
+	if (utimes(filename, ptimes) == 0)
+		return Success;
+	else
+		return Error;
 }
 
-bool FileIO::createDir(const char *path) {
+FileIO::Status FileIO::createDir(const char *path) {
 	char *directory = new char[strlen(path + 1)];
 	char *curr = directory;
 	struct stat stats;
-	bool error = false;
+	Status ret = Success;
 
 	strcpy(directory, path);
-	while (curr != NULL && !error) {
+	while (curr != NULL && ret == Success) {
 		curr = strchr(curr + 1, '/');
 		if (curr != NULL)
 			*curr = '\0';
 		if (access(directory, F_OK) != 0 && errno == ENOENT) {
 			if (mkdir(directory, 0755) != 0) {
 				cerr << command << ": " << directory << ": Could not create directory" << endl;
-				error = true;
+				ret = Error;
 			}
 		} else if (stat(directory, &stats) != 0 || !(stats.st_mode & S_IFDIR)) {
 			cerr << command << ": " << directory << ": Not a directory" << endl;
-			error = true;
+			ret = Error;
 		}
 		if (curr != NULL)
 			*curr = '/';
@@ -209,7 +212,7 @@ bool FileIO::createDir(const char *path) {
 	if (directory != NULL)
 		delete [] directory;
 
-	return error;
+	return ret;
 }
 
 bool FileIO::confirmOverwrite(const char *filename) {
@@ -236,18 +239,18 @@ bool FileIO::confirmOverwrite(const char *filename) {
 	return ret;
 }
 
-bool FileIO::copy(const char *from, const char *to) {
+FileIO::Status FileIO::copy(const char *from, const char *to) {
 	// TODO
-	return false;
+	return Success;
 }
 
-bool FileIO::remove(const char *path) {
+FileIO::Status FileIO::remove(const char *path) {
 	if (unlink(path)) {
 		fprintf(stderr, "%s: %s: ", command, path);
 		perror(NULL);
-		return false;
+		return Error;
 	} else {
-		return true;
+		return Success;
 	}
 }
 
@@ -265,13 +268,13 @@ FileIO::FileIO(const char *_path, const char *_mode) :
 
 FileIO::~FileIO() {}
 
-int FileIO::close() {
-	int error;
-
-	error = fclose(stream);
-	stream = NULL;
-
-	return error;
+FileIO::Status FileIO::close() {
+	if(fclose(stream) == 0) {
+		stream = NULL;
+		return Success;
+	} else {
+		return Error;
+	}
 }
 
 long FileIO::tell() {
@@ -281,11 +284,15 @@ long FileIO::tell() {
 		return ftell(stream);
 }
 
-bool FileIO::seek(long offset) {
-	if (stream == NULL)
-		return false;
-	else
-		return fseek(stream, offset, SEEK_SET) == 0;
+FileIO::Status FileIO::seek(long offset) {
+	if (stream == NULL) {
+		return Error;
+	} else {
+		if (fseek(stream, offset, SEEK_SET) == 0)
+			return Success;
+		else
+			return Error;
+	}
 }
 
 size_t IFile::read(char *buffer, size_t size) {
