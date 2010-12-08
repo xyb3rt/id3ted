@@ -146,77 +146,83 @@ void MP3File::apply(FrameInfo *info) {
 		return;
 	
 	vector<ID3v2::Frame*> frameList = find(info);
+	vector<ID3v2::Frame*>::iterator eachFrame = frameList.begin();
 
-	if (frameList.empty()) {
-		switch (info->fid()) {
-			case FID3_APIC: {
-				ID3v2::AttachedPictureFrame *apic = new ID3v2::AttachedPictureFrame();
-				apic->setMimeType(info->description());
-				apic->setType(ID3v2::AttachedPictureFrame::FrontCover);
-				apic->setPicture(info->data());
-				id3v2Tag->addFrame(apic);
-				break;
-			}
-			case FID3_COMM: {
-				ID3v2::CommentsFrame *comment = new ID3v2::CommentsFrame(DEF_TSTR_ENC);
-				comment->setText(info->text());
-				comment->setDescription(info->description());
-				comment->setLanguage(info->language());
-				id3v2Tag->addFrame(comment);
-				break;
-			}
-			case FID3_TXXX: {
-				ID3v2::UserTextIdentificationFrame *userText =
-						new ID3v2::UserTextIdentificationFrame(DEF_TSTR_ENC);
-				userText->setText(info->text());
-				userText->setDescription(info->description());
-				id3v2Tag->addFrame(userText);
-				break;
-			}
-			case FID3_USLT: {
-				ID3v2::UnsynchronizedLyricsFrame *lyrics =
-						new ID3v2::UnsynchronizedLyricsFrame(DEF_TSTR_ENC);
-				lyrics->setText(info->text());
-				lyrics->setDescription(info->description());
-				lyrics->setLanguage(info->language());
-				id3v2Tag->addFrame(lyrics);
-				break;
-			}
-			case FID3_WCOM:
-			case FID3_WCOP:
-			case FID3_WOAF:
-			case FID3_WOAR:
-			case FID3_WOAS:
-			case FID3_WORS:
-			case FID3_WPAY:
-			case FID3_WPUB: {
-				ID3v2::UrlLinkFrame *urlLink = new ID3v2::UrlLinkFrame(info->id());
-				urlLink->setUrl(info->text());
-				id3v2Tag->addFrame(urlLink);
-				break;
-			}
-			case FID3_WXXX: {
-				ID3v2::UserUrlLinkFrame *userUrl =
-						new ID3v2::UserUrlLinkFrame(DEF_TSTR_ENC);
-				userUrl->setUrl(info->text());
-				userUrl->setDescription(info->description());
-				id3v2Tag->addFrame(userUrl);
-				break;
-			}
-			default: {
-				ID3v2::TextIdentificationFrame *textFrame =
-						new ID3v2::TextIdentificationFrame(info->id(), DEF_TSTR_ENC);
-				textFrame->setText(info->text());
-				id3v2Tag->addFrame(textFrame);
-				break;
-			}
+	if (info->text().isEmpty() && info->fid() != FID3_APIC) {
+		if (!frameList.empty()) {
+			for (; eachFrame != frameList.end(); ++eachFrame)
+				id3v2Tag->removeFrame(*eachFrame);
 		}
-	} else if (info->fid() != FID3_APIC) {
-		if (!info->text().isEmpty())
-			// overwrite matching frame
+	} else {
+		if (frameList.empty() || info->fid() == FID3_APIC) {
+			switch (info->fid()) {
+				case FID3_APIC: {
+					ID3v2::AttachedPictureFrame *apic = new ID3v2::AttachedPictureFrame();
+					apic->setMimeType(info->description());
+					apic->setType(ID3v2::AttachedPictureFrame::FrontCover);
+					apic->setPicture(info->data());
+					id3v2Tag->addFrame(apic);
+					break;
+				}
+				case FID3_COMM: {
+					if (info->text().isEmpty())
+						return;
+					ID3v2::CommentsFrame *comment = new ID3v2::CommentsFrame(DEF_TSTR_ENC);
+					comment->setText(info->text());
+					comment->setDescription(info->description());
+					comment->setLanguage(info->language());
+					id3v2Tag->addFrame(comment);
+					break;
+				}
+				case FID3_TXXX: {
+					ID3v2::UserTextIdentificationFrame *userText =
+							new ID3v2::UserTextIdentificationFrame(DEF_TSTR_ENC);
+					userText->setText(info->text());
+					userText->setDescription(info->description());
+					id3v2Tag->addFrame(userText);
+					break;
+				}
+				case FID3_USLT: {
+					ID3v2::UnsynchronizedLyricsFrame *lyrics =
+							new ID3v2::UnsynchronizedLyricsFrame(DEF_TSTR_ENC);
+					lyrics->setText(info->text());
+					lyrics->setDescription(info->description());
+					lyrics->setLanguage(info->language());
+					id3v2Tag->addFrame(lyrics);
+					break;
+				}
+				case FID3_WCOM:
+				case FID3_WCOP:
+				case FID3_WOAF:
+				case FID3_WOAR:
+				case FID3_WOAS:
+				case FID3_WORS:
+				case FID3_WPAY:
+				case FID3_WPUB: {
+					ID3v2::UrlLinkFrame *urlLink = new ID3v2::UrlLinkFrame(info->id());
+					urlLink->setUrl(info->text());
+					id3v2Tag->addFrame(urlLink);
+					break;
+				}
+				case FID3_WXXX: {
+					ID3v2::UserUrlLinkFrame *userUrl =
+							new ID3v2::UserUrlLinkFrame(DEF_TSTR_ENC);
+					userUrl->setUrl(info->text());
+					userUrl->setDescription(info->description());
+					id3v2Tag->addFrame(userUrl);
+					break;
+				}
+				default: {
+					ID3v2::TextIdentificationFrame *textFrame =
+							new ID3v2::TextIdentificationFrame(info->id(), DEF_TSTR_ENC);
+					textFrame->setText(info->text());
+					id3v2Tag->addFrame(textFrame);
+					break;
+				}
+			}
+		} else {
 			frameList.front()->setText(info->text());
-		else
-			id3v2Tag->removeFrame(frameList.front());
+		}
 	}
 }
 
