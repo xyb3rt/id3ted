@@ -271,7 +271,7 @@ void Options::printUsage() {
 	     << "      --move             when using -o, move files instead of copying them\n\n";
 	cout << "The following wildcards are supported for the -o,-n,-N option arguments:\n"
 	     << "    %a: Artist, %A: album, %t: title, %g: genre, %y: year,\n"
-	     << "    %d: disc number, %n: track number, %%: percent sign\n\n"
+	     << "    %d: disc number, %T: track number, %%: percent sign\n\n"
 	     << "You can add and modify almost any id3v2 frame by using its 4-letter frame id\n"
 	     << "as a long option and the value to apply as the option argument.\n"
 	     << "Use --list-frames to get a list of supported frames (marked with *).\n"
