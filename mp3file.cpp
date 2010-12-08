@@ -157,7 +157,13 @@ void MP3File::apply(FrameInfo *info) {
 		if (frameList.empty() || info->fid() == FID3_APIC) {
 			switch (info->fid()) {
 				case FID3_APIC: {
-					ID3v2::AttachedPictureFrame *apic = new ID3v2::AttachedPictureFrame();
+					ID3v2::AttachedPictureFrame *apic;
+					for (; eachFrame != frameList.end(); ++eachFrame) {
+						apic = dynamic_cast<ID3v2::AttachedPictureFrame*>(*eachFrame);
+						if (apic != NULL && apic->picture() == info->data())
+							return;
+					}
+					apic = new ID3v2::AttachedPictureFrame();
 					apic->setMimeType(info->description());
 					apic->setType(ID3v2::AttachedPictureFrame::FrontCover);
 					apic->setPicture(info->data());
