@@ -129,6 +129,9 @@ uint IPattern::match(const char *filename) {
 	string path(filename);
 	regmatch_t *pmatch = new regmatch_t[subExpCnt + 1];
 
+	status = 1;
+	matches.clear();
+
 	if (regexec(&regex, filename, subExpCnt + 1, pmatch, 0)) {
 		cout << filename << ": pattern does not match filename" << endl;
 		return 0;
@@ -145,13 +148,13 @@ uint IPattern::match(const char *filename) {
 	status = 2;
 	delete [] pmatch;
 
-	return subExpCnt;
+	return matches.size();
 }
 
 MatchInfo IPattern::getMatch(uint num) const {
 	MatchInfo info;
 
-	if (status < 2 || num >= ids.size()) {
+	if (status < 2 || num >= ids.size() || num >= matches.size()) {
 		info.id = 0;
 		info.text = "";
 	} else {
