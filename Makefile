@@ -2,7 +2,6 @@ all: id3ted
 
 CXX?=g++
 PREFIX?=/usr/local
-# see INSTALL for available preprocessor variables
 CXXFLAGS+= -I$(PREFIX)/include -Wall -pedantic
 LDFLAGS+= -L$(PREFIX)/lib
 LIBS+= -ltag -lmagic

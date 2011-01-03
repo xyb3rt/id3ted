@@ -1,5 +1,5 @@
 /* id3ted: id3ted.h
- * Copyright (c) 2010 Bert Muennich <muennich at informatik.hu-berlin.de>
+ * Copyright (c) 2011 Bert Muennich <muennich at informatik.hu-berlin.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,19 +22,10 @@
 
 #include <taglib/taglib.h>
 
+#include "config.h"
+
 #define PROGNAME "id3ted"
-#define VERSION  "git-0.9-20101210"
-
-#define FILE_BUF_SIZE 4096
-#define FIELD_DELIM ':'
-
-#ifdef DISABLE_UTF8
-#define USE_UNICODE  false
-#define DEF_TSTR_ENC TagLib::String::Latin1
-#else
-#define USE_UNICODE  true
-#define DEF_TSTR_ENC TagLib::String::UTF8
-#endif
+#define VERSION  "git-0.9-20110103"
 
 using namespace std;
 using namespace TagLib;

@@ -1,5 +1,3 @@
-BUILDING
---------
 First make sure that taglib and file (libmagic) are installed.
 Otherwise, check if your system offers binary and devel packages for them.
 If it does not, download them here:
@@ -29,18 +27,9 @@ include directories of taglib and file. The LDFLAGS variable has to contain
 "-L" entries for the lib directories of taglib and file.
 Please have a look at the gcc manpage for more details.
 
+All build-time specific settings are set via preprocessor macros in the file
+"config.h". Please check and change them, so that they fit your needs.
+
 After the installation you can type "id3ted --help" for getting information
 on how to use it.
-
-PREPROCESSOR VARIABLES
-----------------------
-The following preprocessor variables are used to control the build process of
-id3ted. You can define them by adding -D entries to the CXXFLAGS variable.
-Please have a look at the gcc manpage for more details.
-
-NO_STR_BASENAME: Use own implementation of the basename function.
-Required if your C string library does not contain it.
-
-DISABLE_UTF8: Prevent id3ted from using UTF-8 as the default encoding for
-filenames and id3 tags. Useful if your system does not support or use UTF-8.
 
