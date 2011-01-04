@@ -154,6 +154,7 @@ int main(int argc, char **argv) {
 				file.fill(minfo);
 				Options::outPattern.setMatch(i, minfo);
 			}
+			Options::outPattern.replaceSpecialChars(REPLACE_CHAR);
 			string newPath = Options::outPattern.getText();
 			if (!newPath.empty()) {
 				FileIO::Status ret = FileIO::copy(filename, newPath.c_str());

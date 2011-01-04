@@ -64,6 +64,7 @@ class OPattern : public Pattern {
 		bool setPattern(const char*);
 		MatchInfo getMatch(uint) const;
 		void setMatch(uint, const MatchInfo&);
+		void replaceSpecialChars(char);
 		const string& getText() const { return text; }
 
 	private:
