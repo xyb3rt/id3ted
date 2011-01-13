@@ -8,7 +8,7 @@ and then build and install them.
 Use the following commands to build and install id3ted:
 
     $ make
-		# make install
+    # make install
 
 Please notice, that the second command needs root priveleges.
 
