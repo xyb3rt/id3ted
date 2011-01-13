@@ -40,7 +40,7 @@ class FileIO {
 			Error
 		};
 
-#ifdef NO_STR_BASENAME
+#ifdef __APPLE__
 		static const char* basename(const char*);
 #endif	
 
