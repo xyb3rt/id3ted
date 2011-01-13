@@ -26,6 +26,9 @@
 		</ul>
 
 		<h3>News</h3>
+		<h5>January 13, 2011</h5>
+		The first beta release of version 1.0 is out. Please use this version, altough it might have some bugs, because otherwise they might never be found and get fixed.
+
 		<h5>August 16, 2010</h5>
 		As of today and version 0.7.3, I consider id3ted to be feature complete. I will not implement any new features by myself, because I do not have enough time to do so.
 		I will, however, fix bugs and include patches sent by other people. The next stable release (if any) will get the version number 1.0.
@@ -41,14 +44,22 @@
 
 		<h4>Building</h4>
 		id3ted uses the common <tt>make</tt> and <tt>make install</tt> procedure.<br><br>
-		The default Makefile should work on most *NIX systems. There is also an alternative Makefile for Darwin &amp; Mac OS X: Makefile.darwin. This one also looks into the installation directories of the two most common port systems -- MacPorts and Fink -- when looking for TagLib and File/Magic.<br><br>
+		The default Makefile should work on most *NIX systems.<br><br>
 		The default installation directory of id3ted is <tt>/usr/local</tt>. You could also use an alternative directory, by installing id3ted with the following command line:
 		<blockquote><tt>make PREFIX="/your/install/path" install</tt></blockquote>
-		Please also have a look at the INSTALL file for available preprocessor variables, which alter the compilation and disable features of id3ted.
+		All build-time specific settings are set via preprocessor macros in the file "config.h". Please check and change them, so that they fit your needs.
 
 		<h3>Download</h3>
 		You can <a href="http://github.com/muennich/id3ted">browse</a> the source code repository on GitHub or get a copy using git with the following command:
 		<blockquote><tt>git clone http://github.com/muennich/id3ted.git</tt></blockquote>
+
+		<h4>Unstable releases</h4>
+		<b><a href="https://github.com/downloads/muennich/id3ted/id3ted-1.0b1.tar.gz">id3ted v1.0b1</a></b> -- <i>January 13, 2011</i>
+		<ul>
+			<li>The code got refactored and is much cleaner now, so there's no reason to feel ashamed when abandoning this project...</li>
+			<li>Build-time specific settings are now easily controlled at one place (config.h)</ul>
+			<li>Replace special characters in filenames while organizing. List of characters is set at compile time (config.h)</li>
+		</ul>
 
 		<h4>Stable releases</h4>
 		<b><a href="https://github.com/downloads/muennich/id3ted/id3ted-0.7.3.tar.gz">id3ted v0.7.3</a></b> -- <i>August 13, 2010</i>
