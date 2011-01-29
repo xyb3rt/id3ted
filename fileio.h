@@ -40,10 +40,7 @@ class FileIO {
 			Error
 		};
 
-#ifdef __APPLE__
-		static const char* basename(const char*);
-#endif	
-
+		static const char* _basename(const char*);
 		static bool exists(const char*);
 		static bool isRegular(const char*);
 		static bool isReadable(const char*);

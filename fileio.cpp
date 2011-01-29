@@ -36,8 +36,10 @@
 #ifdef __APPLE__
 #define st_atim st_atimespec
 #define st_mtim st_mtimespec
+#endif
 
-const char* FileIO::basename(const char *path) {
+const char* FileIO::_basename(const char *path) {
+#ifdef __APPLE__
 	static char* buffer = NULL;
 	static size_t bufferSize = 0;
 	int len, pathLen, newLen;
@@ -75,8 +77,10 @@ const char* FileIO::basename(const char *path) {
     }
   }
   return res;
+#else
+	return basename(path);
+#endif
 }
-#endif /* __APPLE__ */
 
 bool FileIO::exists(const char *path) {
 	return !access(path, F_OK);

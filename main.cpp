@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 	int retCode = 0;
 	bool firstOutput = true;
 
-	command = basename(argv[0]);
+	command = FileIO::_basename(argv[0]);
 	if (strcmp(command, ".") == 0)
 		command = PROGNAME;
 
