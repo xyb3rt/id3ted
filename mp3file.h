@@ -59,9 +59,6 @@ class MP3File {
 
 		void extractAPICs(bool) const;
 
-		int filenameToTag(const char*);
-		int organize(const char*, bool = false, bool = false, struct timeval* = NULL);
-
 	private:
 		MPEG::File file;
 		Tag *id3Tag;
