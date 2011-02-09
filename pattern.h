@@ -52,8 +52,8 @@ class IPattern : public Pattern {
 
 	private:
 		string pattern;
-		uint subExpCnt;
 		regex_t regex;
+		vector<char> subs;
 		vector<string> matches;
 
 		int preBackslashCount(const char*, uint) const;

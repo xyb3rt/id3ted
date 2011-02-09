@@ -48,10 +48,10 @@ bool IPattern::setPattern(const char *text, bool isRE) {
 	char flag = isRE ? 'N' : 'n';
 	ostringstream tmp;
 
-	subExpCnt = 0;
 	if (status > 0)
 		regfree(&regex);
 	ids.clear();
+	subs.clear();
 	matches.clear();
 	status = 0;
 
@@ -68,15 +68,15 @@ bool IPattern::setPattern(const char *text, bool isRE) {
 				case 't':
 				case 'g':
 					tmp << "(.+)";
+					subs.push_back(text[++i]);
 					wildcardPresent = true;
-					++subExpCnt;
 					break;
 				case 'y':
 				case 'T':
 				case 'd':
 					tmp << "([0-9]+)";
+					subs.push_back(text[++i]);
 					wildcardPresent = true;
-					++subExpCnt;
 					break;
 				case '%':
 					tmp << '%';
@@ -87,7 +87,6 @@ bool IPattern::setPattern(const char *text, bool isRE) {
 					     << text[i] << text[i+1] << "'" << endl;
 					return false;
 			}
-			ids.push_back(text[++i]);
 		} else {
 			if (!isRE) {
 				if (strchr("\\*+?.^$[]{}()", text[i]))
@@ -96,7 +95,7 @@ bool IPattern::setPattern(const char *text, bool isRE) {
 				if (text[i] == '(' && preBackslashCount(text, i) % 2 == 0)
 					// although its match is never used,
 					// we still have to count this subexpression
-					++subExpCnt;
+					subs.push_back(0);
 			}
 			tmp << text[i];
 		}
@@ -111,7 +110,7 @@ bool IPattern::setPattern(const char *text, bool isRE) {
 	pattern = tmp.str();
 
 	if (regcomp(&regex, pattern.c_str(), REG_EXTENDED) ||
-			regex.re_nsub != subExpCnt) {
+			regex.re_nsub != subs.size()) {
 		cerr << command << ": error compiling regex for pattern, -" << flag
 		     << " option ignored" << endl;
 		return false;
@@ -127,22 +126,26 @@ uint IPattern::match(const char *filename) {
 		return 0;
 
 	string path(filename);
-	regmatch_t *pmatch = new regmatch_t[subExpCnt + 1];
+	regmatch_t *pmatch = new regmatch_t[subs.size() + 1];
 
 	status = 1;
+	ids.clear();
 	matches.clear();
 
-	if (regexec(&regex, filename, subExpCnt + 1, pmatch, 0)) {
+	if (regexec(&regex, filename, subs.size() + 1, pmatch, 0)) {
 		cout << filename << ": pattern does not match filename" << endl;
 		return 0;
 	}
 
-	for (uint i = 1; i <= subExpCnt; ++i) {
-		if (pmatch[i].rm_so == -1 || pmatch[i].rm_eo == -1)
-			matches.push_back("");
-		else
-			matches.push_back(path.substr(pmatch[i].rm_so,
-					pmatch[i].rm_eo - pmatch[i].rm_so));
+	for (uint i = 1; i <= subs.size(); ++i) {
+		if (subs[i-1]) {
+			if (pmatch[i].rm_so == -1 || pmatch[i].rm_eo == -1)
+				matches.push_back("");
+			else
+				matches.push_back(path.substr(pmatch[i].rm_so,
+						pmatch[i].rm_eo - pmatch[i].rm_so));
+			ids.push_back(subs[i-1]);
+		}
 	}
 
 	status = 2;
