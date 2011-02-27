@@ -214,8 +214,7 @@ bool Options::parseCommandLine(int argc, char **argv) {
 }
 
 void Options::printVersion() {
-	cout << PROGNAME << " - command line id3 tag editor\n"
-	     << "Version " << VERSION << ", written by Bert Muennich\n"
+	cout << PROGNAME << " " << VERSION << " - command line id3 tag editor\n"
 	     << "Uses TagLib v" << TAGLIB_MAJOR_VERSION << "."
 	     << TAGLIB_MINOR_VERSION << "." << TAGLIB_PATCH_VERSION
 	     << ", written by Scott Wheeler" << endl;
