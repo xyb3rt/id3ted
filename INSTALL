@@ -17,11 +17,7 @@ command with the following, to use a directory of your choice:
 
     # make PREFIX=/your/install/path install
 
-The default Makefile should work on almost any *NIX system. There is also
-an alternative Makefile for Darwin & Mac OS X: Makefile.darwin.
-This one also looks into the installation directories of the two most common
-port systems -- MacPorts and Fink -- when looking for TagLib and File/Magic.
-
+The default Makefile should work on almost any *NIX system.
 Please make sure that the CXXFLAGS variable contains "-I" entries for the
 include directories of taglib and file. The LDFLAGS variable has to contain
 "-L" entries for the lib directories of taglib and file.
