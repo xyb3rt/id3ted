@@ -1,3 +1,14 @@
+id3ted v1.0b2 -- February 27, 2011
+ * Fixed handling of parentheses in organize and filename-to-tag patterns
+
+id3ted v1.0b1 -- January 13, 2011
+ * The code got refactored and is much cleaner now, so there's no reason to
+   feel ashamed when abandoning this project...
+ * Build-time specific settings are now easily controlled at one place
+   (config.h)
+ * Replace special characters in filenames while organizing. List of characters
+   is set at compile time (config.h)
+
 id3ted v0.7.3 -- August 14, 2010
  * Updated documentation and helper files
  * Moved the project from sourceforge to github
