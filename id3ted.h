@@ -25,7 +25,7 @@
 #include "config.h"
 
 #define PROGNAME "id3ted"
-#define VERSION  "1.0b2"
+#define VERSION  "git-20110415"
 
 using namespace std;
 using namespace TagLib;
