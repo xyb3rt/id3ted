@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <iostream>
 #include <cstring>
+#include <cstdio>
 
 #include "fileio.h"
 #include "frameinfo.h"
@@ -36,8 +36,8 @@ FrameInfo::FrameInfo(const char *id, ID3v2FrameID fid, const char *text) :
 				break;
 			mimetype = FileIO::mimetype(text);
 			if (strstr(mimetype, "image") == NULL) {
-				cerr << command << ": " << text << ": Wrong mime-type: "
-				     << mimetype << "! Not an image, not attached." << endl;
+				warn("%s: Wrong mime-type: %s. Not an image, not attached.", text,
+				     mimetype);
 				break;
 			}
 			file.read(_data);

@@ -392,8 +392,7 @@ void MP3File::showInfo() const {
 	}
 
 	int length = properties->length();
-	cout << "MPEG " << version << " Layer " << properties->layer()
-	     << " " << channelMode << endl;
+	printf("MPEG %s Layer %d %s\n", version, properties->layer(), channelMode);
 	printf("bitrate: %d kBit/s, sample rate: %d Hz, length: %02d:%02d:%02d\n",
 			properties->bitrate(), properties->sampleRate(),
 			length / 3600, length / 60, length % 60);
@@ -417,7 +416,7 @@ void MP3File::listID3v1Tag() const {
 	TagLib::String genreStr = id3v1Tag->genre();
 	int genre = ID3v1::genreIndex(genreStr);
 	
-	cout << "ID3v1" << ":\n";
+	printf("ID3v1:\n");
 	printf("Title  : %-30s  Track: %d\n",
 			id3v1Tag->title().toCString(USE_UNICODE), id3v1Tag->track());
 	printf("Artist : %-30s  Year : %-4s\n",
@@ -574,8 +573,9 @@ void MP3File::extractAPICs(bool overwrite) const {
 
 		outFile.write(apic->picture());
 		if (outFile.error())
-			cerr << command << ": " << filename.str()
-			     << ": Error writing file" << endl;
+			warn("%s: Could not write file", filename.str().c_str());
+
+		outFile.close();
 	}
 }
 

@@ -58,8 +58,8 @@ bool IPattern::setPattern(const char *text, bool isRE) {
 	for (i = 0; i < strlen(text); ++i) {
 		if (text[i] == '%') {
 			if (i+1 >= strlen(text)) {
-				cerr << command << ": -" << flag << " option ignored, "
-				     << "because pattern ends with an invalid character" << endl;
+				warn("-%c option ignored, because patterns ends with an invalid character",
+				     flag);
 				return false;
 			}
 			switch (text[i+1]) {
@@ -82,9 +82,8 @@ bool IPattern::setPattern(const char *text, bool isRE) {
 					tmp << '%';
 					break;
 				default:
-					cerr << command << ": -" << flag << " option ignored, "
-					     << "because pattern contains invalid wildcard: `"
-					     << text[i] << text[i+1] << "'" << endl;
+					warn("-%c option ignored, because pattern contains invalid wildcard: %c%c",
+					     text[i], text[i+1]);
 					return false;
 			}
 		} else {
@@ -102,8 +101,8 @@ bool IPattern::setPattern(const char *text, bool isRE) {
 	}
 
 	if (!wildcardPresent) {
-		cerr << command << ": -" << flag << " option ignored, "
-		     << "because pattern does not contain any wildcard" << endl;
+		warn("-%c option ignored, because pattern does not contain any wildcard",
+		     flag);
 		return false;
 	}
 
@@ -111,8 +110,7 @@ bool IPattern::setPattern(const char *text, bool isRE) {
 
 	if (regcomp(&regex, pattern.c_str(), REG_EXTENDED) ||
 			regex.re_nsub != subs.size()) {
-		cerr << command << ": error compiling regex for pattern, -" << flag
-		     << " option ignored" << endl;
+		warn("error compiling regex for pattern, -%c option ignored", flag);
 		return false;
 	}
 
@@ -133,7 +131,7 @@ uint IPattern::match(const char *filename) {
 	matches.clear();
 
 	if (regexec(&regex, filename, subs.size() + 1, pmatch, 0)) {
-		cout << filename << ": pattern does not match filename" << endl;
+		warn("%s: pattern does not match filename", filename);
 		return 0;
 	}
 
@@ -192,16 +190,14 @@ bool OPattern::setPattern(const char *pattern) {
 		return false;
 	
 	if (pattern[strlen(pattern) - 1] == '/') {
-		cerr << command << ": -o option ignored, "
-		     << "because file pattern ends with a slash" << endl;
+		warn("-o option ignored, because pattern ends with a slash");
 		return false;
 	}
 
 	for (i = 0; i < strlen(pattern); ++i) {
 		if (pattern[i] == '%') {
 			if (i+1 >= strlen(pattern)) {
-				cerr << command << ": -o option ignored, "
-				     << "because pattern ends with an invalid character" << endl;
+				warn("-o option ignored, because pattern ends with an invalid character");
 				return false;
 			}
 			switch (pattern[i+1]) {
@@ -219,17 +215,15 @@ bool OPattern::setPattern(const char *pattern) {
 					wildcardPresent = true;
 					break;
 				default:
-					cerr << command << ": -o option ignored, "
-							 << "because pattern contains invalid wildcard: `"
-							 << pattern[i] << pattern[i+1] << "'" << endl;
+					warn("-o option ignored, because pattern contains invalid wildcard: %c%c",
+					     pattern[i], pattern[i+1]);
 					return false;
 			}
 		}
 	}
 
 	if (!wildcardPresent) {
-		cerr << command << ": -o option ignored, "
-		     << "because pattern does not contain any wildcard" << endl;
+		warn("-o option ignored, because pattern does not contain any wildcard");
 		return false;
 	}
 

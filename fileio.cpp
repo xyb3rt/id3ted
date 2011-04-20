@@ -18,7 +18,6 @@
 
 #include <cstring>
 #include <cstdlib>
-#include <iostream>
 #include <sstream>
 #include <errno.h>
 #include <sys/stat.h>
@@ -90,7 +89,7 @@ bool FileIO::isRegular(const char *path) {
 	struct stat stats;
 
 	if (stat(path, &stats) == -1) {
-		cerr << command << ": " << path << ": Could not stat file" << endl;
+		warn("%s: Could not stat file", path);
 		return false;
 	}
 
@@ -169,7 +168,7 @@ FileIO::Status FileIO::saveTimes(const char *filename, FileTimes &times) {
 	if (filename == NULL)
 		return Error;
 	if (stat(filename, &stats) == -1) {
-		cerr << command << ": " << filename << ": Could not stat file" << endl;
+		warn("%s: Could not stat file", filename);
 		return Error;
 	}
 	TIMESPEC_TO_TIMEVAL(&times.access, &stats.st_atim);
@@ -205,11 +204,11 @@ FileIO::Status FileIO::createDir(const char *path) {
 			*curr = '\0';
 		if (access(directory, F_OK) != 0 && errno == ENOENT) {
 			if (mkdir(directory, 0755) != 0) {
-				cerr << command << ": " << directory << ": Could not create directory" << endl;
+				warn("%s: Could not create directory", directory);
 				ret = Error;
 			}
 		} else if (stat(directory, &stats) != 0 || !(stats.st_mode & S_IFDIR)) {
-			cerr << command << ": " << directory << ": Not a directory" << endl;
+			warn("%s: Not a directory", directory);
 			ret = Error;
 		}
 		if (curr != NULL)
@@ -227,7 +226,7 @@ bool FileIO::confirmOverwrite(const char *filename) {
 	bool ret = false;
 
 	while (1) {
-		cout << "overwrite " << filename << "? [yN] ";
+		printf("overwrite `%s'? [yN] ", filename);
 		userIn = fgets(buffer, 10, stdin);
 		if (userIn == NULL)
 			continue;
@@ -274,15 +273,14 @@ FileIO::Status FileIO::copy(const char *from, const char *to) {
 				if (FileIO::createDir(directory) != Success)
 					return Error;
 			} else {
-				fprintf(stderr, "%s: %s: ", command, directory);
-				perror(NULL);
+				warn("%s: %s", directory, strerror(errno));
 				return Error;
 			}
 		}
 
 		stat(directory, &toStats);
 		if (!(toStats.st_mode & S_IFDIR)) {
-			cerr << command << ": " << directory << ": Not a directory" << endl;
+			warn("%s: Not a directory", directory);
 			return Error;
 		}
 
@@ -302,12 +300,12 @@ FileIO::Status FileIO::copy(const char *from, const char *to) {
 		}
 
 		if (!(toStats.st_mode & S_IFREG)) {
-			cerr << command << ": " << to << ": Not a regular file" << endl;
+			warn("%s: Not a regular file", to);
 			return Error;
 		} else {
 			/* overwrite? */
 			if (access(to, W_OK) != 0) {
-				cerr << command << ": " <<  to << ": Permission denied" << endl;
+				warn("%s: Permission denied", to);
 				return Error;
 			} else if (!Options::forceOverwrite) {
 				/* have to ask the user if he wants to overwrite the file */
@@ -321,8 +319,7 @@ FileIO::Status FileIO::copy(const char *from, const char *to) {
 	if (Options::moveFiles && sameFS) {
 		/* simply rename the file */
 		if (rename(from, to) != 0) {
-			cerr << command << ": " << from << ": Could not rename file to: "
-			     << to << endl;
+			warn("%s: Could not rename file to: %s", from, to);
 			return Error;
 		}
 	} else {
@@ -338,14 +335,14 @@ FileIO::Status FileIO::copy(const char *from, const char *to) {
 		while (!inFile.eof() && !error) {
 			icnt = inFile.read(buf, FILECPY_BUFSIZE);
 			if (inFile.error()) {
-				cerr << command << ": " << from << ": Error reading file" << endl;
+				warn("%s: Could not read file", from);
 				error = true;
 			} else {
 				ocnt = 0;
 				while (ocnt < icnt) {
 					ocnt += outFile.write(buf, icnt - ocnt);
 					if (outFile.error()) {
-						cerr << command << ": " << to << ": Error writing file" << endl;
+						warn("%s: Could not write file", to);
 						error = true;
 						break;
 					}
@@ -373,8 +370,7 @@ FileIO::Status FileIO::copy(const char *from, const char *to) {
 
 FileIO::Status FileIO::remove(const char *path) {
 	if (unlink(path)) {
-		fprintf(stderr, "%s: %s: ", command, path);
-		perror(NULL);
+		warn("%s: %s", path, strerror(errno));
 		return Error;
 	} else {
 		return Success;
@@ -388,7 +384,7 @@ FileIO::FileIO(const char *_path, const char *_mode) :
 	
 	stream = fopen(path, mode);
 	if (stream == NULL) {
-		fprintf(stderr, "%s: %s: ", command, path);
+		warn("%s: %s", path, strerror(errno));
 		perror(NULL);
 	}
 }

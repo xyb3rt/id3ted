@@ -320,8 +320,7 @@ void LameTag::print(bool checkCRC) {
 			size_t blockSize = size < FILE_BUF_SIZE ? size : FILE_BUF_SIZE;
 			file.read(buffer, blockSize);
 			if (file.error()) {
-				cerr << command << ": " << filename
-						 << ": Error reading file" << endl;
+				warn("%s: Could not read file", filename);
 				return;
 			}
 			size -= blockSize;

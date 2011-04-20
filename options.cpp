@@ -67,8 +67,7 @@ bool Options::parseCommandLine(int argc, char **argv) {
 				if (strlen(optarg) == 1) {
 					fieldDelimiter = optarg[0];
 				} else {
-					cerr << command << ": The argument of -d/--delimiter "
-					     << "has to be a single character" << endl;
+					warn("The argument of -d/--delimiter has to be a single character");
 					error = true;
 				}
 				break;
@@ -107,7 +106,7 @@ bool Options::parseCommandLine(int argc, char **argv) {
 					framesToRemove.push_back(optarg);
 					writeFile = true;
 				} else {
-					cerr << command << ": -r: invalid id3v2 frame id: " << optarg << endl;
+					warn("-r: invalid id3v2 frame id: %s", optarg);
 					error = true;
 				}
 				break;
@@ -160,8 +159,8 @@ bool Options::parseCommandLine(int argc, char **argv) {
 				FrameInfo *info = new FrameInfo(textFID, fid, optarg);
 
 				if (fid == FID3_TXXX && info->description().isEmpty()) {
-					cerr << command << ": missing description field in --TXXX "
-					     << "option argument" << endl;
+					warn("Missing description field in --TXXX option argument: %s",
+					     optarg);
 					delete info;
 					error = true;
 					break;
@@ -179,30 +178,28 @@ bool Options::parseCommandLine(int argc, char **argv) {
 	if (!error) {
 		// check if given options are in conflict
 		if (tagsToWrite == 1 && framesToRemove.size() > 0) {
-			cerr << command << ": conflicting options: -1, -r" << endl;
+			warn("Conflicting options: -1, -r");
 			error = true;
 		}
 		if (tagsToWrite == 1 && framesToModify.size() > 0) {
-			cerr << command << ": conflicting options: -1, --"
-			     << framesToModify[0]->id() << endl;
+			warn("Conflicting options: -1, --%s", framesToModify[0]->id());
 			error = true;
 		}
 		if (tagsToStrip & 2 && framesToModify.size() > 0) {
-			cerr << command << ": conflicting options: strip id3v2 tag, --"
-			     << framesToModify[0]->id() << endl;
+			warn("Conflicting options: strip id3v2 tag, --%s",
+			     framesToModify[0]->id());
 			error = true;
 		}
 		if (tagsToStrip & tagsToWrite) {
-			cerr << command << ": conflicting options: strip and write "
-			     << "the same tag version" << endl;
+			warn("Conflicting options: strip and write the same tag version");
 			error = true;
 		}
 		// check for missing mandatory arguments
 		if (optind == 1) {
-			cerr << command << ": missing arguments" << endl;
+			warn("Missing arguments");
 			error = true;
 		} else if (fileCount == 0) {
-			cerr << command << ": missing <FILES>" << endl;
+			warn("Missing <FILES>");
 			error = true;
 		}
 	}
@@ -222,7 +219,7 @@ void Options::printVersion() {
 }
 
 void Options::printUsage() {
-	cout << "Usage: " << command << " [OPTIONS]... <FILES>\n\n"
+	cout << "Usage: " << PROGNAME << " [OPTIONS]... <FILES>\n\n"
 	     << "OPTIONS:\n"
 	     << "If a long option shows an argument as mandatory,\n"
 	     << "then it is also mandatory for the equivalent short option.\n\n"

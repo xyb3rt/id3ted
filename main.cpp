@@ -17,6 +17,7 @@
  */
 
 #include <iostream>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <list>
@@ -32,8 +33,6 @@
 #include "options.h"
 #include "pattern.h"
 
-const char *command;
-
 /* return values: (ored together)
  *   0: everything went fine
  *   1: error allocating memory
@@ -43,10 +42,6 @@ const char *command;
 int main(int argc, char **argv) {
 	int retCode = 0;
 	bool firstOutput = true;
-
-	command = FileIO::_basename(argv[0]);
-	if (strcmp(command, ".") == 0)
-		command = PROGNAME;
 
 	if (Options::parseCommandLine(argc, argv)) {
 		cerr << "Try `" << argv[0] << " --help' for more information." << endl;
@@ -60,21 +55,19 @@ int main(int argc, char **argv) {
 				FileIO::saveTimes(filename, ptimes) == FileIO::Success;
 
 		if (!FileIO::isRegular(filename)) {
-			cerr << command << ": " << filename << ": Not a regular file" << endl;
+			warn("%s: Not a regular file", filename);
 			retCode |= 4;
 			continue;
 		}
 
 		if (!FileIO::isReadable(filename)) {
-			cerr << command << ": " << filename
-			     << ": Could not open file for reading" << endl;
+			warn("%s: Could not open file for reading", filename);
 			retCode |= 4;
 			continue;
 		}
 
 		if (Options::writeFile && !FileIO::isWritable(filename)) {
-			cerr << command << ": " << filename
-			     << ": Could not open file for writing" << endl;
+			warn("%s: Could not open file for writing", filename);
 			retCode |= 4;
 			continue;
 		}
@@ -95,8 +88,7 @@ int main(int argc, char **argv) {
 			file.extractAPICs(Options::forceOverwrite);
 
 		if (Options::framesToRemove.size() > 0 && Options::tagsToStrip & 2) {
-			cerr << command << ": -r option ignored, because whole id3v2 tag "
-			     << "gets stripped" << endl;
+			warn("-r option ignored, because whole id3v2 tag gets stripped");
 			Options::framesToRemove.clear();
 			retCode |= 4;
 		} else {
@@ -122,8 +114,7 @@ int main(int argc, char **argv) {
 
 		if (Options::tagsToStrip != 0) {
 			if (!file.strip(Options::tagsToStrip)) {
-				cerr << command << ": " << filename
-				     << ": Could not strip id3 tag" << endl;
+				warn("%s: Could not strip id3 tag", filename);
 				retCode |= 4;
 			}
 		}
@@ -159,8 +150,7 @@ int main(int argc, char **argv) {
 			if (!newPath.empty()) {
 				FileIO::Status ret = FileIO::copy(filename, newPath.c_str());
 				if (ret == FileIO::Error) {
-					cerr << command << ": " << filename << ": Could not organize file"
-					     << endl;
+					warn("%s: Could not organize file", filename);
 					retCode |= 4;
 				} else if (ret == FileIO::Success && preserveTimes) {
 					FileIO::resetTimes(newPath.c_str(), ptimes);
@@ -175,3 +165,15 @@ int main(int argc, char **argv) {
 	return retCode;
 }
 
+void warn(const char* fmt, ...) {
+	va_list args;
+
+	if (!fmt)
+		return;
+
+	va_start(args, fmt);
+	fprintf(stderr, "%s: ", PROGNAME);
+	vfprintf(stderr, fmt, args);
+	fprintf(stderr, "\n");
+	va_end(args);
+}

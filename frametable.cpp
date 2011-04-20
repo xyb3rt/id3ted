@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <iostream>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
@@ -204,24 +203,22 @@ void FrameTable::listFrames() {
 			case FID3_TSIZ:
 			case FID3_TYER:
 			case FID3_UFID:
-				cout << "    ";
+				printf("    ");
 				break;
 			default:
-				cout << "  * ";
+				printf("  * ");
 				break;
 		}
-		cout << _table[i].id << "  " << _table[i].description << "\n";
+		printf("%s  %s\n", _table[i].id, _table[i].description);
 	}
 
-	cout << "\n"
-	     << "(*): Frame with write support: You can use the 4-letter frame ID as a\n"
-	     << "     long option to set the content of the frame to the option argument." << endl;
+	printf("\n"
+	       "(*): Frame with write support: You can use the 4-letter frame ID as a\n"
+	       "     long option to set the content of the frame to the option argument.\n");
 }
 
 void FrameTable::listGenres() {
-	for (uint i = 0; i < ID3v1::genreList().size(); i++) {
-		printf("  %5d: ", i);
-		cout << ID3v1::genre(i) << endl;
-	}
+	for (uint i = 0; i < ID3v1::genreList().size(); i++)
+		printf("  %5d: %s\n", i, ID3v1::genre(i).toCString());
 }
 
