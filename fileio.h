@@ -40,7 +40,6 @@ class FileIO {
 			Error
 		};
 
-		static const char* _basename(const char*);
 		static bool exists(const char*);
 		static bool isRegular(const char*);
 		static bool isReadable(const char*);

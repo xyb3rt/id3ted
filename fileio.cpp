@@ -37,50 +37,6 @@
 #define st_mtim st_mtimespec
 #endif
 
-const char* FileIO::_basename(const char *path) {
-#ifdef __APPLE__
-	static char* buffer = NULL;
-	static size_t bufferSize = 0;
-	int len, pathLen, newLen;
-
-  if (path == NULL || *path == 0)
-    return ".";
-  res = strrchr(path, '/');
-  if (res == NULL) {
-    // path contains no slash
-    res = path;
-  } else {
-    if (*(res + 1) == 0) {
-      // right most slash is last char in path
-      len = 1;
-      pathLen = strlen(path);
-      // looping back over consecutive slashes at the end
-      while (*(--res) == '/' && len < pathLen) len++;
-      if (len == pathLen)
-				// path only contains slashes
-				return "/";
-      newLen = 1;
-      // looping back to next slash or beginning of path
-      while (*(--res) != '/' && len + newLen < pathLen) newLen++;
-      if (bufferSize < newLen + 1) {
-        if (buffer != NULL)
-					delete [] buffer;
-        buffer = new char[newLen + 1];
-        bufferSize = newLen + 1;
-      }
-      strncpy(buffer, res+1, newLen);
-      buffer[newLen] = '\0';
-      res = (const char*) buffer;
-    } else {
-      res++;
-    }
-  }
-  return res;
-#else
-	return basename(path);
-#endif
-}
-
 bool FileIO::exists(const char *path) {
 	return !access(path, F_OK);
 }

@@ -262,8 +262,7 @@ void Options::printUsage() {
 	     << "                         same as -n, but interpret PATTERN as an extended regex\n"
 	     << "  -o, --organize PATTERN organize files into directory structure specified\n"
 	     << "                         by PATTERN (for supported wildcards see below)\n"
-	     << "  -x, --extract-apics    extract attached pictures into the current\n"
-	     << "                         working directory as FILENAME.apic-NUM.FORMAT\n"
+	     << "  -x, --extract-apics    extract attached pictures as FILENAME.apic-NUM.FORMAT\n"
 	     << "  -f, --force            overwrite existing files without asking (-o,-x)\n"
 	     << "      --move             when using -o, move files instead of copying them\n\n";
 	cout << "The following wildcards are supported for the -o,-n,-N option arguments:\n"

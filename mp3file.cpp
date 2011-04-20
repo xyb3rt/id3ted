@@ -534,7 +534,6 @@ void MP3File::extractAPICs(bool overwrite) const {
 		return;
 
 	int num = 0;
-	const char *name = basename(file.name());
 	const char *mimetype, *filetype;
 	ostringstream filename;
 
@@ -559,7 +558,7 @@ void MP3File::extractAPICs(bool overwrite) const {
 		}
 
 		filename.str("");
-		filename << name << ".apic-" << (++num < 10 ? "0" : "");
+		filename << file.name() << ".apic-" << (++num < 10 ? "0" : "");
 		filename << num << "." << filetype;
 
 		if (FileIO::exists(filename.str().c_str())) {
