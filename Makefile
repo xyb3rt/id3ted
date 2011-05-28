@@ -16,7 +16,7 @@ id3ted:	$(OBJFILES)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 install: all
-	install -D -m 0755 id3ted $(PREFIX)/bin/id3ted
+	install -D -m 0755 id3ted $(DESTDIR)$(PREFIX)/bin/id3ted
 
 clean:
 	rm -f id3ted *.o
