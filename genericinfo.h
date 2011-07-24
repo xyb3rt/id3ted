@@ -20,8 +20,6 @@
 #ifndef __GENERICINFO_H__
 #define __GENERICINFO_H__
 
-#include <taglib/tstring.h>
-
 #include "id3ted.h"
 
 class GenericInfo {

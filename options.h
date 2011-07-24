@@ -24,7 +24,6 @@
 #include <vector>
 
 #include <taglib/id3v2frame.h>
-#include <taglib/tstring.h>
 
 #include "id3ted.h"
 #include "frameinfo.h"

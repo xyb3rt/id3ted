@@ -20,8 +20,6 @@
 #ifndef __FRAMETABLE_H__
 #define __FRAMETABLE_H__
 
-#include <taglib/tstring.h>
-
 #include "id3ted.h"
 
 class FrameTable {

@@ -22,11 +22,12 @@
 
 #include <stdarg.h>
 #include <taglib/taglib.h>
+#include <taglib/tstring.h>
 
 #include "config.h"
 
 #define PROGNAME "id3ted"
-#define VERSION  "git-20110722"
+#define VERSION  "git-20110725"
 
 using namespace std;
 using namespace TagLib;
@@ -129,6 +130,9 @@ typedef enum _ID3v2FrameID {
 	FID3_WPUB,  /* Publishers official webpage */
 	FID3_WXXX   /* User defined URL link frame */
 } ID3v2FrameID;
+
+static const String::Type DEF_TSTR_ENC = USE_UTF8 ? String::UTF8
+                                                  : String::Latin1;
 
 #endif /* __ID3TED_H__ */
 

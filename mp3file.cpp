@@ -21,7 +21,6 @@
 #include <cstdio>
 #include <cstring>
 
-#include <taglib/tstring.h>
 #include <taglib/id3v1tag.h>
 #include <taglib/id3v1genres.h>
 #include <taglib/id3v2tag.h>
@@ -127,7 +126,7 @@ void MP3File::apply(GenericInfo *info) {
 			}
 			if (tags & 2) {
 				FrameInfo trackInfo(FrameTable::textFrameID(FID3_TRCK),
-						FID3_TRCK, info->value().toCString(USE_UNICODE));
+						FID3_TRCK, info->value().toCString(USE_UTF8));
 				apply(&trackInfo);
 			}
 			break;
@@ -273,22 +272,22 @@ void MP3File::fill(MatchInfo &info) {
 
 	switch (info.id) {
 		case 'a':
-			text = id3Tag->artist().toCString(USE_UNICODE);
+			text = id3Tag->artist().toCString(USE_UTF8);
 			if (text.empty())
 				text = "Unknown Artist";
 			break;
 		case 'A':
-			text = id3Tag->album().toCString(USE_UNICODE);
+			text = id3Tag->album().toCString(USE_UTF8);
 			if (text.empty())
 				text = "Unknown Album";
 			break;
 		case 't':
-			text = id3Tag->title().toCString(USE_UNICODE);
+			text = id3Tag->title().toCString(USE_UTF8);
 			if (text.empty())
 				text = "Unknown Title";
 			break;
 		case 'g':
-			text = id3Tag->genre().toCString(USE_UNICODE);
+			text = id3Tag->genre().toCString(USE_UTF8);
 			break;
 		case 'y': {
 			uint year = id3Tag->year();
@@ -418,14 +417,14 @@ void MP3File::listID3v1Tag() const {
 	
 	printf("ID3v1:\n");
 	printf("Title  : %-30s  Track: %d\n",
-			id3v1Tag->title().toCString(USE_UNICODE), id3v1Tag->track());
+			id3v1Tag->title().toCString(USE_UTF8), id3v1Tag->track());
 	printf("Artist : %-30s  Year : %-4s\n",
-			id3v1Tag->artist().toCString(USE_UNICODE),
+			id3v1Tag->artist().toCString(USE_UTF8),
 			(year != 0 ? TagLib::String::number(year).toCString() : ""));
 	printf("Album  : %-30s  Genre: %s (%d)\n",
-			id3v1Tag->album().toCString(USE_UNICODE),
+			id3v1Tag->album().toCString(USE_UTF8),
 			(genre == 255 ? "Unknown" : genreStr.toCString()), genre);
-	printf("Comment: %s\n", id3v1Tag->comment().toCString(USE_UNICODE));
+	printf("Comment: %s\n", id3v1Tag->comment().toCString(USE_UTF8));
 }
 
 void MP3File::listID3v2Tag(bool withDesc) const {
@@ -461,9 +460,9 @@ void MP3File::listID3v2Tag(bool withDesc) const {
 				ID3v2::CommentsFrame *comment =
 						dynamic_cast<ID3v2::CommentsFrame*>(*frame);
 				if (comment != NULL)
-					cout << "[" << comment->description().toCString(USE_UNICODE)
+					cout << "[" << comment->description().toCString(USE_UTF8)
 					     << "](" << comment->language() << "): "
-							 << comment->toString().toCString(USE_UNICODE);
+							 << comment->toString().toCString(USE_UTF8);
 				break;
 			}
 			case FID3_TCON: {
@@ -482,10 +481,10 @@ void MP3File::listID3v2Tag(bool withDesc) const {
 				ID3v2::UnsynchronizedLyricsFrame *lyrics =
 						dynamic_cast<ID3v2::UnsynchronizedLyricsFrame*>(*frame);
 				if (lyrics != NULL) {
-					const char *text = lyrics->text().toCString(USE_UNICODE);
+					const char *text = lyrics->text().toCString(USE_UTF8);
 					const char *indent = "    ";
 
-					cout << "[" << lyrics->description().toCString(USE_UNICODE)
+					cout << "[" << lyrics->description().toCString(USE_UTF8)
 					     << "](" << lyrics->language().data()
 					     << "):\n" << indent;
 					while (*text != '\0') {
@@ -503,10 +502,10 @@ void MP3File::listID3v2Tag(bool withDesc) const {
 						dynamic_cast<ID3v2::UserTextIdentificationFrame*>(*frame);
 				if (userText != NULL) {
 					StringList textList = userText->fieldList();
-					cout << "[" << userText->description().toCString(USE_UNICODE)
+					cout << "[" << userText->description().toCString(USE_UTF8)
 					     << "]: ";
 					if (textList.size() > 1)
-						cout << textList[1].toCString(USE_UNICODE);
+						cout << textList[1].toCString(USE_UTF8);
 				}
 				break;
 			}
@@ -514,15 +513,15 @@ void MP3File::listID3v2Tag(bool withDesc) const {
 				ID3v2::UserUrlLinkFrame *userUrl =
 						dynamic_cast<ID3v2::UserUrlLinkFrame*>(*frame);
 				if (userUrl != NULL)
-					cout << "[" << userUrl->description().toCString(USE_UNICODE)
-					     << "]: " << userUrl->url().toCString(USE_UNICODE);
+					cout << "[" << userUrl->description().toCString(USE_UTF8)
+					     << "]: " << userUrl->url().toCString(USE_UTF8);
 				break;
 			}
 			case FID3_XXXX: {
 				break;
 			}
 			default:
-				cout << (*frame)->toString().toCString(USE_UNICODE);
+				cout << (*frame)->toString().toCString(USE_UTF8);
 				break;
 		}
 		cout << endl;

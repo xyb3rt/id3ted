@@ -21,7 +21,6 @@
 #define __LAMETAG_H__
 
 #include <taglib/tbytevector.h>
-#include <taglib/tstring.h>
 
 #include "id3ted.h"
 

@@ -25,7 +25,6 @@
 #include <magic.h>
 
 #include <taglib/tfile.h>
-#include <taglib/tstring.h>
 
 #include "fileio.h"
 #include "options.h"
@@ -204,7 +203,7 @@ FileIO::Status FileIO::copy(const char *from, const char *to) {
 	String path(to, DEF_TSTR_ENC);
 
 	path = path.stripWhiteSpace();
-	to = path.toCString(USE_UNICODE);
+	to = path.toCString(USE_UTF8);
 
 	if (strcmp(from, to) == 0)
 		return Abort;
@@ -215,7 +214,7 @@ FileIO::Status FileIO::copy(const char *from, const char *to) {
 
 	if (lastSlash != -1) {
 		dirname = path.substr(0, lastSlash);
-		directory = dirname.toCString(USE_UNICODE);
+		directory = dirname.toCString(USE_UTF8);
 	}
 
 	bool sameFS = false;
