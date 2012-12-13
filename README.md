@@ -85,8 +85,8 @@ repository on GitHub or get a copy using git with the following command:
 
 **Unstable releases**
 
-[**v1.0b3**](http://muennich.github.com/id3ted/release/id3ted-1.0b3.tar.gz)
-(*June 10, 2011*)
+**[v1.0b3]**(http://muennich.github.com/id3ted/release/id3ted-1.0b3.tar.gz)
+*(June 10, 2011)*
 
   * Extract APICs next to the mp3 files
 
