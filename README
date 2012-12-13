@@ -1,9 +1,0 @@
-id3ted - command line id3 tag editor
-http://muennich.github.com/id3ted/
-
-Please have a look at the homepage and the INSTALL file for instructions on
-building and installing id3ted.
-
-id3ted uses TagLib -- http://developer.kde.org/~wheeler/taglib/ -- written
-by Scott Wheeler.
-
