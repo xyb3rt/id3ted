@@ -60,22 +60,24 @@ packages for them.</p>
 
 <p><strong>Building</strong></p>
 
-<p>id3ted uses the common Makefile procedure:</p>
+<p>Use the following commands to build and install id3ted:</p>
 
 <pre><code>make
 make install
 </code></pre>
 
-<p>The default Makefile should work on most NIX systems.
-The default installation directory of id3ted is <em>/usr/local</em>. You could also 
-use an alternative directory, by installing id3ted with the following command
-line:</p>
+<p>Please notice, that the second command typically needs root priveleges.</p>
+
+<p>The default Makefile should work on most NIX systems. The default installation
+directory of id3ted is <em>/usr/local</em>. You can, however, install id3ted in any
+directory of your choice, by replacing the second command with the following:</p>
 
 <pre><code>make PREFIX="/your/install/path" install
 </code></pre>
 
 <p>All build-time specific settings are set via preprocessor macros in the file
-<em>config.h</em>. Please check and change them, so that they fit your needs.</p>
+<em>config.h</em>. Please check and change them before building id3ted, so that they
+fit your needs.</p>
 
 <h2>Download &amp; Changelog</h2>
 
