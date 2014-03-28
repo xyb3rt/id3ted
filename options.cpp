@@ -270,7 +270,7 @@ void Options::printUsage() {
 	     << "    %d: disc number, %T: track number, %%: percent sign\n\n"
 	     << "You can add and modify almost any id3v2 frame by using its 4-letter frame id\n"
 	     << "as a long option and the value to apply as the option argument.\n"
-	     << "Use --list-frames to get a list of supported frames (marked with *).\n"
+	     << "Use --frame-list to get a list of supported frames (marked with *).\n"
 	     << "The argument for --APIC has to be the path of an image file!\n\n"
 	     << "There are some frames which support multiple field arguments:\n"
 	     << "      --COMM COMMENT[" << FIELD_DELIM << "DESCRIPTION[" << FIELD_DELIM << "LANGUAGE]]\n"
