@@ -124,7 +124,7 @@ int FrameTable::_tableSize = sizeof(_table) / sizeof(FrameTableEntry);
 const char* FrameTable::frameDescription(const String &textFID) {
 	int a = 0, b = _tableSize, i;
 
-	while (a < b) {
+	while (a <= b) {
 		i = (a + b) / 2;
 		if (textFID == _table[i].id)
 			return _table[i].description;
@@ -140,7 +140,7 @@ const char* FrameTable::frameDescription(const String &textFID) {
 ID3v2FrameID FrameTable::frameID(const String &textFID) {
 	int a = 0, b = _tableSize, i;
 
-	while (a < b) {
+	while (a <= b) {
 		i = (a + b) / 2;
 		if (textFID == _table[i].id)
 			return _table[i].fid;
