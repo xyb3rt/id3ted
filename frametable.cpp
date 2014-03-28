@@ -122,50 +122,28 @@ FrameTable::FrameTableEntry FrameTable::_table[] = {
 int FrameTable::_tableSize = sizeof(_table) / sizeof(FrameTableEntry);
 
 const char* FrameTable::frameDescription(const String &textFID) {
-	int a = 0, b = _tableSize, i;
-
-	while (a < b) {
-		i = (a + b) / 2;
+	for (uint i = 1; i < _tableSize; i++) {
 		if (textFID == _table[i].id)
 			return _table[i].description;
-		else if (textFID < _table[i].id)
-			b = i - 1;
-		else
-			a = i + 1;
 	}
-
+	cerr << "   no table entry found for field " << textFID 
+		<< ".  returning " << _table[0].description << endl;
 	return _table[0].description;
 }
 
 ID3v2FrameID FrameTable::frameID(const String &textFID) {
-	int a = 0, b = _tableSize, i;
-
-	while (a < b) {
-		i = (a + b) / 2;
+	for (uint i = 1; i < _tableSize; i++) {
 		if (textFID == _table[i].id)
 			return _table[i].fid;
-		else if (textFID < _table[i].id)
-			b = i - 1;
-		else
-			a = i + 1;
 	}
-
 	return _table[0].fid;
 }
 
 const char* FrameTable::textFrameID(ID3v2FrameID frameID) {
-	int a = 0, b = _tableSize, i;
-
-	while (a <= b) {
-		i = (a + b) / 2;
+	for (uint i = 1; i < _tableSize; i++) {
 		if (frameID == _table[i].fid)
 			return _table[i].id;
-		else if (frameID < _table[i].fid)
-			b = i - 1;
-		else
-			a = i + 1;
 	}
-
 	return _table[0].id;
 }
 
