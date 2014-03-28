@@ -265,7 +265,7 @@ void OPattern::setMatch(uint num, const MatchInfo &info) {
 }
 
 void OPattern::replaceSpecialChars(char replaceChar) {
-	int pos;
+	size_t pos;
 
 	while ((pos = text.find_first_of("*~")) != string::npos)
 		text[pos] = replaceChar;
