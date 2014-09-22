@@ -36,6 +36,13 @@
 #define st_mtim st_mtimespec
 #endif
 
+#ifndef TIMESPEC_TO_TIMEVAL
+#define TIMESPEC_TO_TIMEVAL(tv, ts) {   \
+	(tv)->tv_sec = (ts)->tv_sec;          \
+	(tv)->tv_usec = (ts)->tv_nsec / 1000; \
+}
+#endif
+
 bool FileIO::exists(const char *path) {
 	return !access(path, F_OK);
 }
