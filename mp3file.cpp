@@ -483,10 +483,15 @@ void MP3File::listID3v2Tag(bool withDesc) const {
 				if (lyrics != NULL) {
 					const char *text = lyrics->text().toCString(USE_UTF8);
 					const char *indent = "    ";
+					TagLib::ByteVector lang = lyrics->language();
+					bool showLanguage = lang.size() == 3;
 
-					cout << "[" << lyrics->description().toCString(USE_UTF8)
-					     << "](" << lyrics->language().data()
-					     << "):\n" << indent;
+					cout << "[" << lyrics->description().toCString(USE_UTF8) << "]";
+					if (showLanguage)
+						cout << "(" << lang[0] << lang[1] << lang[2];
+					else
+						cout << "(XXX";
+					cout << "):\n" << indent;
 					while (*text != '\0') {
 						if (*text == (char) 10 || *text == (char) 13)
 							cout << "\n" << indent;
