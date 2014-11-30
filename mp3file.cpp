@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <cctype>
 #include <cstdio>
 #include <cstring>
 
@@ -459,10 +460,18 @@ void MP3File::listID3v2Tag(bool withDesc) const {
 			case FID3_COMM: {
 				ID3v2::CommentsFrame *comment =
 						dynamic_cast<ID3v2::CommentsFrame*>(*frame);
-				if (comment != NULL)
-					cout << "[" << comment->description().toCString(USE_UTF8)
-					     << "](" << comment->language() << "): "
-							 << comment->toString().toCString(USE_UTF8);
+				if (comment != NULL) {
+					TagLib::ByteVector lang = comment->language();
+					bool showLanguage = lang.size() == 3 && isalpha(lang[0]) && 
+					                    isalpha(lang[1]) && isalpha(lang[2]);
+
+					cout << "[" << comment->description().toCString(USE_UTF8) << "]";
+					if (showLanguage)
+						cout << "(" << lang[0] << lang[1] << lang[2];
+					else
+						cout << "(XXX";
+					cout << "): " << comment->toString().toCString(USE_UTF8);
+				}
 				break;
 			}
 			case FID3_TCON: {
@@ -484,7 +493,8 @@ void MP3File::listID3v2Tag(bool withDesc) const {
 					const char *text = lyrics->text().toCString(USE_UTF8);
 					const char *indent = "    ";
 					TagLib::ByteVector lang = lyrics->language();
-					bool showLanguage = lang.size() == 3;
+					bool showLanguage = lang.size() == 3 && isalpha(lang[0]) && 
+					                    isalpha(lang[1]) && isalpha(lang[2]);
 
 					cout << "[" << lyrics->description().toCString(USE_UTF8) << "]";
 					if (showLanguage)
