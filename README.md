@@ -30,6 +30,10 @@ Features
 News
 ----
 
+**January 4, 2015**
+
+Version 1.0 is finally out.
+
 **January 13, 2011**
 
 The first beta release of version 1.0 is out. Please use this version, altough
@@ -85,7 +89,10 @@ repository on GitHub or get a copy using git with the following command:
 
     git clone https://github.com/muennich/id3ted.git
 
-**Unstable releases**
+**[v1.0](http://muennich.github.com/id3ted/release/id3ted-1.0.tar.gz)**
+*(January 4, 2015)*
+
+  * Various bug fixes
 
 **[v1.0b3](http://muennich.github.com/id3ted/release/id3ted-1.0b3.tar.gz)**
 *(June 10, 2011)*
@@ -106,8 +113,6 @@ repository on GitHub or get a copy using git with the following command:
     (config.h)
   * Replace special characters in filenames while organizing. List of
     characters is set at compile time (config.h)
-
-**Stable releases**
 
 **[v0.7.3](http://muennich.github.com/id3ted/release/id3ted-0.7.3.tar.gz)**
 *(August 13, 2010)*
