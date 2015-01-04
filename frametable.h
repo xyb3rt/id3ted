@@ -16,14 +16,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef __FRAMETABLE_H__
-#define __FRAMETABLE_H__
+#ifndef FRAMETABLE_H
+#define FRAMETABLE_H
 
 #include "id3ted.h"
 
 class FrameTable {
 	private:
-		typedef struct _FrameTableEntry {
+		typedef struct {
 			const char *id;
 			ID3v2FrameID fid;
 			const char *description;
@@ -40,5 +40,5 @@ class FrameTable {
 		static void listGenres();
 };
 
-#endif /* __FRAMETABLE_H__ */
+#endif /* FRAMETABLE_H */
 

@@ -16,8 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef __ID3TED_H__
-#define __ID3TED_H__
+#ifndef ID3TED_H
+#define ID3TED_H
 
 #include <stdarg.h>
 #include <taglib/taglib.h>
@@ -26,7 +26,7 @@
 #include "config.h"
 
 #define PROGNAME "id3ted"
-#define VERSION  "git-20141130"
+#define VERSION  "git-20150104"
 
 using namespace std;
 using namespace TagLib;
@@ -34,7 +34,7 @@ using TagLib::uint;
 
 void warn(const char* fmt, ...);
 
-typedef enum _ID3v2FrameID {
+typedef enum {
 	FID3_XXXX,  /* Unknown frame */
 	FID3_AENC,  /* Audio encryption */
 	FID3_APIC,  /* Attached picture */
@@ -133,5 +133,5 @@ typedef enum _ID3v2FrameID {
 static const String::Type DEF_TSTR_ENC = USE_UTF8 ? String::UTF8
                                                   : String::Latin1;
 
-#endif /* __ID3TED_H__ */
+#endif /* ID3TED_H */
 

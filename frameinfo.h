@@ -16,8 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef __FRAMEINFO_H__
-#define __FRAMEINFO_H__
+#ifndef FRAMEINFO_H
+#define FRAMEINFO_H
 
 #include <taglib/tbytevector.h>
 
@@ -46,5 +46,5 @@ class FrameInfo {
 		void split3();
 };
 
-#endif /* __FRAMEINFO_H__ */
+#endif /* FRAMEINFO_H */
 

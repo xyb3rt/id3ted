@@ -16,8 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef __OPTIONS_H__
-#define __OPTIONS_H__
+#ifndef OPTIONS_H
+#define OPTIONS_H
 
 #include <getopt.h>
 #include <vector>
@@ -71,5 +71,5 @@ class Options {
 		static int optFrameID;
 };
 
-#endif /* __OPTIONS_H__ */
+#endif /* OPTIONS_H */
 

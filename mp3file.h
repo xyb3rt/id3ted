@@ -16,8 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef __MP3FILE_H__
-#define __MP3FILE_H__
+#ifndef MP3FILE_H
+#define MP3FILE_H
 
 #include <vector>
 
@@ -69,4 +69,4 @@ class MP3File {
 		vector<ID3v2::Frame*> find(FrameInfo*);
 };
 
-#endif /* __MP3FILE_H__ */
+#endif /* MP3FILE_H */

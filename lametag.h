@@ -16,8 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef __LAMETAG_H__
-#define __LAMETAG_H__
+#ifndef LAMETAG_H
+#define LAMETAG_H
 
 #include <taglib/tbytevector.h>
 
@@ -76,4 +76,4 @@ class LameTag {
 		double albumGain;
 };
 
-#endif /* __LAMETAG_H__ */
+#endif /* LAMETAG_H */

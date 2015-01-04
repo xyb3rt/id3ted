@@ -16,8 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef __GENERICINFO_H__
-#define __GENERICINFO_H__
+#ifndef GENERICINFO_H
+#define GENERICINFO_H
 
 #include "id3ted.h"
 
@@ -33,4 +33,4 @@ class GenericInfo {
 		const String _value;
 };
 
-#endif /* __GENERICINFO_H__ */
+#endif /* GENERICINFO_H */

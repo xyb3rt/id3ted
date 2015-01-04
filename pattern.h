@@ -16,8 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef __PATTERN_H__
-#define __PATTERN_H__
+#ifndef PATTERN_H
+#define PATTERN_H
 
 #include <string>
 #include <vector>
@@ -25,7 +25,7 @@
 
 #include "id3ted.h"
 
-typedef struct _MatchInfo {
+typedef struct {
 	char id;
 	string text;
 } MatchInfo;
@@ -72,4 +72,4 @@ class OPattern : public Pattern {
 		vector<uint> len;
 };
 
-#endif /* __PATTERN_H__ */
+#endif /* PATTERN_H */

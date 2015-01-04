@@ -16,8 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef __FILEIO_H__
-#define __FILEIO_H__
+#ifndef FILEIO_H
+#define FILEIO_H
 
 #include <cstdio>
 #include <sys/time.h>
@@ -26,7 +26,7 @@
 
 #include "id3ted.h"
 
-typedef struct _FileTimes {
+typedef struct {
 	struct timeval access;
 	struct timeval modification;
 } FileTimes;
@@ -86,4 +86,4 @@ class OFile : public FileIO {
 		size_t write(const ByteVector&);
 };
 
-#endif /* __FILEIO_H__ */
+#endif /* FILEIO_H */
