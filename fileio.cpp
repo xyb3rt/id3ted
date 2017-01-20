@@ -154,7 +154,7 @@ FileIO::Status FileIO::resetTimes(const char *filename, const FileTimes &times) 
 }
 
 FileIO::Status FileIO::createDir(const char *path) {
-	char *directory = new char[strlen(path + 1)];
+	char *directory = new char[strlen(path) + 1];
 	char *curr = directory;
 	struct stat stats;
 	Status ret = Success;
